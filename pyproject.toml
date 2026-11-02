@@ -1,0 +1,17 @@
+[project]
+name = "compose-application"
+version = "0.1.0.dev0"
+description = "Optional composition of typed storage, APIs and spatial interfaces."
+readme = "README.md"
+requires-python = ">=3.14"
+authors = [{ name = "ellainng" }]
+dependencies = []
+
+[project.urls]
+Source = "https://github.com/outside-labs/compose_application"
+Issues = "https://github.com/outside-labs/compose_application/issues"
+Project = "https://github.com/orgs/outside-labs/projects/18"
+
+[build-system]
+requires = ["uv_build>=0.12.19,<0.13.0"]
+build-backend = "uv_build"
