@@ -8,3 +8,4 @@ build/
 .coverage
 htmlcov/
 .env
+ui-browser-receipt.json

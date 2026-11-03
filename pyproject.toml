@@ -8,7 +8,11 @@ authors = [{ name = "ellainng" }]
 dependencies = []
 
 [project.optional-dependencies]
-service = ["expose-api[backpack] @ git+https://github.com/outside-labs/expose_api.git@95d2e1ce0045a7e24e08041d217cf1bbcd1edd00"]
+service = ["expose-api[backpack] @ git+https://github.com/outside-labs/expose_api.git@01d7c486ae9041532c8bfe01d8a2a00496523e68"]
+ui = [
+    "expose-api[backpack] @ git+https://github.com/outside-labs/expose_api.git@01d7c486ae9041532c8bfe01d8a2a00496523e68",
+    "spatial-ui @ git+https://github.com/outside-labs/spatial_ui.git@cf97352f0d1c4a3f226620bc575ef6dcc2880eaf",
+]
 
 [project.urls]
 Source = "https://github.com/outside-labs/compose_application"
@@ -18,3 +22,6 @@ Project = "https://github.com/orgs/outside-labs/projects/18"
 [build-system]
 requires = ["uv_build>=0.12.19,<0.13.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+browser-tests = ["playwright==1.64.0"]

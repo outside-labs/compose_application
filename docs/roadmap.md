@@ -59,6 +59,18 @@ take the relational contract after the shared contract prerequisite is accepted.
 
 ## Runtime gates and later choices
 
+The REST binding is implemented through focused children of SUI-API-01:
+[SUI-INPUT-02](https://github.com/outside-labs/spatial_ui/issues/25),
+[SUI-FORM-01](https://github.com/outside-labs/spatial_ui/issues/26),
+[SUI-FORM-02](https://github.com/outside-labs/spatial_ui/issues/27),
+[SUI-REST-01](https://github.com/outside-labs/spatial_ui/issues/28),
+[SUI-API-02](https://github.com/outside-labs/spatial_ui/issues/29) and
+[CA-UI-01](https://github.com/outside-labs/compose_application/issues/16).
+[API-BP-02](https://github.com/outside-labs/expose_api/issues/28) owns the
+transaction-validation repair discovered by their actual service acceptance.
+The [UI reference profile](ui-reference.md) qualifies the CPython REST slice;
+CA-05's live transport and hosting/authentication decisions retain their gates.
+
 Runtime roadmap parents remain the canonical owners for interpreter work.
 Composition consumes accepted capability slices and package profiles; it does
 not wait for closure of the full Track A/Track B roadmaps. Each owning issue
