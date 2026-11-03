@@ -46,3 +46,9 @@ Linux, macOS and Windows using Python 3.14.
 No release has been published for this project. Package publication and hosted
 deployment require their own selected scope and authorization. License terms
 will be selected before publication.
+# Service composition
+
+The optional [CPython service profile](docs/service-profile.md) provides explicit
+configuration and an asynchronous application context owning validated storage,
+the typed resource and the ASGI app. Install with `uv sync --extra service`;
+base imports remain independent of the integration packages.

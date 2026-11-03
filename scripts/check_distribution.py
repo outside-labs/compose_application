@@ -1,8 +1,10 @@
 """Build and smoke-test independent installed wheel and source distributions."""
 
+import argparse
 import os
 from pathlib import Path
 import subprocess
+import shutil
 import tempfile
 import tomllib
 import venv
@@ -15,6 +17,9 @@ def run(*arguments, cwd):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--service", action="store_true", help="qualify the optional service profile in both installed artifacts")
+    args = parser.parse_args()
     project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
     if project["dependencies"]:
         raise RuntimeError("The initial package foundation declares no runtime dependencies.")
@@ -26,6 +31,7 @@ def main():
         sources = list(artifacts.glob("*.tar.gz"))
         if len(wheels) != 1 or len(sources) != 1:
             raise RuntimeError("Expected one wheel and one source distribution.")
+        shutil.copytree(ROOT / "tests", work / "tests", ignore=shutil.ignore_patterns("__pycache__"))
         for kind, artifact in (("wheel", wheels[0]), ("source", sources[0])):
             environment = work / kind
             venv.EnvBuilder(with_pip=False).create(environment)
@@ -35,13 +41,18 @@ def main():
                 "import importlib.metadata as metadata, pathlib, sys, compose_application",
                 f"assert metadata.version('compose-application') == {project['version']!r}",
                 f"assert metadata.metadata('compose-application')['Requires-Python'] == {project['requires-python']!r}",
-                "assert not metadata.requires('compose-application')",
+                "assert all('extra ==' in item for item in metadata.requires('compose-application'))",
                 "location = pathlib.Path(compose_application.__file__).resolve()",
                 "assert location.is_relative_to(pathlib.Path(sys.prefix).resolve())",
                 "assert location.with_name('py.typed').is_file()",
                 "assert not any(name in sys.modules for name in ('backpack_store', 'enforce_type', 'expose_api', 'spatial_ui'))",
             ))
             run(python, "-I", "-c", probe, cwd=work)
+            if args.service:
+                run("uv", "pip", "install", "--python", python, str(artifact) + "[service]", cwd=work)
+                run(python, "-I", "-c", "from expose_api.backpack import BackpackStore; from compose_application import application", cwd=work)
+                run(python, "-I", "-W", "error::ResourceWarning", "-m", "unittest", "discover",
+                    "-s", work / "tests", "-p", "test_service.py", "-v", cwd=work)
             print(f"Installed {kind} passed: {artifact.name}", flush=True)
 
 
