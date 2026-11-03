@@ -20,9 +20,9 @@ live = [
 ]
 
 tabular = [
-    "expose-api[backpack] @ git+https://github.com/outside-labs/expose_api.git@ef046d0e48e5b0828e0fef422f4516b8852c8860",
-    "spatial-ui @ git+https://github.com/outside-labs/spatial_ui.git@80b0adec28a6dcc773cf80e708461e0ac43f3576",
-    "headless-spreadsheets @ git+https://github.com/outside-labs/headless_spreadsheets.git@b0902fbf1c8b51ff0de167de697aee65bc83ca80",
+    "expose-api[backpack] @ git+https://github.com/outside-labs/expose_api.git@cdff4682db5decc3d6bdb55f7ba5a6a2105f154a",
+    "spatial-ui @ git+https://github.com/outside-labs/spatial_ui.git@0b272fd4f69d0b93126c90fae942c09cef25b5cc",
+    "headless-spreadsheets @ git+https://github.com/outside-labs/headless_spreadsheets.git@6eaff1b3764910720956c66559dce3f34a430ee2",
 ]
 
 [project.urls]

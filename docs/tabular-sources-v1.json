@@ -10,11 +10,11 @@
   "packages": {
     "expose-api": {
       "version": "0.1.0",
-      "revision": "ef046d0e48e5b0828e0fef422f4516b8852c8860"
+      "revision": "cdff4682db5decc3d6bdb55f7ba5a6a2105f154a"
     },
     "spatial-ui": {
       "version": "0.1.0",
-      "revision": "80b0adec28a6dcc773cf80e708461e0ac43f3576"
+      "revision": "0b272fd4f69d0b93126c90fae942c09cef25b5cc"
     },
     "backpack-store": {
       "version": "0.1.0",
@@ -26,7 +26,7 @@
     },
     "headless-spreadsheets": {
       "version": "0.1.0",
-      "revision": "b0902fbf1c8b51ff0de167de697aee65bc83ca80"
+      "revision": "6eaff1b3764910720956c66559dce3f34a430ee2"
     }
   }
 }

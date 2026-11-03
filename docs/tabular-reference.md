@@ -1,4 +1,4 @@
-# Persistent read-only table reference
+# Persistent read-only and editable table reference
 
 The optional `cpython-tabular/1` profile composes declared Backpack rows, the
 opt-in tabular API and reusable Spatial UI TableBrowser. It is independently
@@ -10,6 +10,9 @@ Base installation still imports and requires none of these packages.
 uv sync --locked --extra tabular
 uv run --frozen python -m compose_application.tabular check
 uv run --frozen python -m compose_application.tabular serve --database ./table.sqlite --port 8000
+uv run --frozen python -m compose_application.tabular serve --editable --database ./table.sqlite --port 8000
+uv run --frozen python -m compose_application.tabular check-edits
+uv run --frozen python -m compose_application.headless_tabular check
 ```
 
 The reference binds only numeric loopback HTTP. It seeds 120 synthetic records
@@ -33,8 +36,9 @@ cannot replace a newer source/generation. Explicit refresh discards continuation
 keyset pages across concurrent writes can move/duplicate/omit rows and do not
 promise a frozen snapshot. Query/scalar/cell/response/candidate/VM limits retain
 [tabular/1](tabular-v1.md). Errors disclose neither hidden counts nor query/row
-values. Schema/query responses expose no writable columns, and no cell-save
-route exists in this profile.
+values. The default read-only mode exposes no writable columns or cell-save
+route. `--editable` explicitly enables checked scalar edits and the immutable
+public key column used by authoritative reloads.
 
 The owned API SQLite worker, reference HTTP listener, UI sessions and per-browser
 query workers drain on close. Preview server cleanup runs off the API event loop
@@ -70,6 +74,47 @@ uv run --frozen python -m playwright install chromium
 uv run --frozen python -W error::ResourceWarning -m unittest discover -s tests -p browser_tabular.py -v
 ```
 
-Editing remains under HS-TAB-02/API-TAB-03/SUI-TAB-03/TAB-03. Markdown package/API
-selection stays under the separate MD-01 decision; this read-only profile does
-not depend on extraction, hosting or browser-local SQLite/runtime qualification.
+## Editable workflow and independent headless consumer
+
+With `--editable`, select a cell and choose **Edit selected cell**. Sort/search
+before editing, stage a value, Save or press Enter, then clear search. The same
+durable row retains the change after process restart. The title/done/rank/score
+fields are writable; the domain key is immutable and owner remains concealed.
+Titles must be nonblank and nullable ranks nonnegative. View state stays in each
+browser; SQLite stores the records and revisions.
+
+Drafts preserve captured row key/column/revision through sort/search/projection
+changes. A second browser with an old whole-row revision receives a conflict
+and retains its draft. Reload current row, review its value/revision, explicitly
+reapply the draft and Save, or discard. Invalid/read-only/denied outcomes preserve
+data and revisions. A canceled or lost response can follow commit, so reload
+before retrying. The UI refuses superseded source/query/session completions and
+drains accepted work on teardown.
+
+`check-edits` runs 27 actual HTTP/storage checks in independent write/reopen
+processes: sorted/filtered targets, committed projections, unrelated fields,
+whole-row conflicts, invalid scalars/full models, immutable/hidden fields,
+current/proposed authorization, independent rows and closed workers. An
+additional cancellation test delays the HTTP response after commit and verifies
+the committed row with a fresh exact-key query.
+
+The separate `headless_tabular` example owns its synchronous public Backpack
+registration and connection, supplies an explicitly imported BackpackSource,
+and consumes detached scalar snapshots with the same keys/revisions/field IDs.
+Its seven checks cover sort/search, a checked edit, unrelated fields, a second
+writer, invalid-model rollback and independent reopen. A shared-database test
+demonstrates that the API and this headless consumer see the same registered
+row. It is trusted in-process access and has no HTTP authentication policy.
+Native in-memory formulas/Decimal/date/datetime remain their independent profile;
+the first durable adapter never silently converts them.
+
+The separate `browser_tabular_edits.py` check uses actual HTTP, SQLite and
+Chromium: sort/search/edit/save/clear search/restart, independent drafts, stale
+conflicts with explicit review/reapply, invalid/read-only edits and unchanged
+unrelated fields. It retains `tabular-edit-browser-receipt.json`. Run it with
+the browser group and command above, replacing the test pattern with
+`browser_tabular_edits.py`.
+
+Markdown package/API selection remains a separate MD-01 decision. Collection
+subscriptions, bulk edits, dynamic schema editing, PostgreSQL, hosting and
+browser-local SQLite/runtime qualification remain separate extensions.

@@ -102,6 +102,8 @@ origin and host. Each project pins the accepted immutable composition source.
 Generation installs nothing. Matching repeat requests leave owner edits and
 data untouched. See the [layout, setup and acceptance](docs/reference-projects.md).
 
-The optional [persistent read-only table reference](docs/tabular-reference.md)
+The optional [persistent read-only and editable table reference](docs/tabular-reference.md)
 provides dataset sorting, literal search, column controls and pagination over
 protected registered records without changing stored values or revisions.
+Explicit editable mode adds checked scalar saves, preserved conflict drafts
+and process-restart acceptance; a separate headless example uses the same rows.

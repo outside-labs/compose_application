@@ -1,4 +1,4 @@
-"""Optional persisted read-only table reference over synthetic loopback records."""
+"""Optional persisted read-only/editable tables over synthetic loopback records."""
 
 import argparse
 import asyncio
@@ -23,6 +23,10 @@ class TableItem:
     rank: int | None = None
     score: float = 0.0
 
+    def __post_init__(self):
+        if not self.title.strip() or self.rank is not None and self.rank < 0:
+            raise ValueError("A nonblank title and nonnegative nullable rank are required.")
+
 
 def dependencies():
     try:
@@ -38,10 +42,10 @@ def dependencies():
 
 
 @asynccontextmanager
-async def tabular_application(database, *, seed=True):
+async def tabular_application(database, *, seed=True, editable=False):
     """Own a local worker and an explicitly protected synthetic table API."""
     api, adapter = dependencies()
-    if str(database) == ":memory:" or type(seed) is not bool:
+    if str(database) == ":memory:" or type(seed) is not bool or type(editable) is not bool:
         raise ValueError("Select a persistent database and explicit seed behavior.")
     store = await adapter.open(TableItem, Path(database), namespace="tabular", table="app_tabular_items", type_key="reference.table_item", id_field="key")
     service = Service(Path(database), store, None, None)
@@ -62,14 +66,15 @@ async def tabular_application(database, *, seed=True):
         def verify(token):
             return api.Principal(token[7:]) if token in {"reader-alice", "reader-bob"} else None
         app = api.App(authenticate=api.BearerAuth(verify), auth_challenge="Bearer", max_body_size=65536)
-        resource = app.include(TableItem, store=store, id_field="key", path="/work-items", operations=("list", "get"),
+        resource = app.include(TableItem, store=store, id_field="key", path="/work-items", operations=("list", "get", "update") if editable else ("list", "get"),
             authorize=lambda request: request.principal is not None,
-            record_policy=lambda principal, operation, value: value.owner == principal.subject)
+            record_policy=lambda principal, operation, value: value.owner == principal.subject and value.title != "policy-denied")
         app.tabular(resource, table_id="work_items", schema_version="1", application_scope="tabular-reference-v1", columns=[
-            api.TableColumn("title", "title", "Title", sortable=True, searchable=True),
-            api.TableColumn("done", "done", "Done", sortable=True),
-            api.TableColumn("rank", "rank", "Rank", sortable=True),
-            api.TableColumn("score", "score", "Score", sortable=True)])
+            api.TableColumn("title", "title", "Title", sortable=True, searchable=True, writable=editable),
+            api.TableColumn("done", "done", "Done", sortable=True, writable=editable),
+            api.TableColumn("rank", "rank", "Rank", sortable=True, writable=editable),
+            api.TableColumn("score", "score", "Score", sortable=True, writable=editable),
+            *([api.TableColumn("key", "key", "Key", sortable=True)] if editable else [])])
         service.resource, service.app = resource, app
         yield service
     finally:
@@ -83,11 +88,11 @@ def transport(origin, principal="alice"):
     return HTTPTransport(origin, headers=(("Authorization", f"Bearer reader-{principal}"),), max_response_body=4194304)
 
 
-def make_ui(client):
+def make_ui(client, *, editable=False):
     from spatial_ui import App, TableBrowser
     from .ui import STYLESHEET
-    return App(lambda: TableBrowser(client, title="Persistent work items", page_size=50),
-               title="Read-only work items", stylesheet=STYLESHEET)
+    return App(lambda: TableBrowser(client, title="Persistent work items", page_size=50, editable=editable),
+               title="Editable work items" if editable else "Read-only work items", stylesheet=STYLESHEET)
 
 
 async def fingerprint(store):
@@ -185,23 +190,29 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("check")
+    commands.add_parser("check-edits")
     serve = commands.add_parser("serve")
     serve.add_argument("--database", type=Path, required=True)
     serve.add_argument("--port", type=int, default=8000)
     serve.add_argument("--principal", choices=("alice", "bob"), default="alice")
+    serve.add_argument("--editable", action="store_true")
     args = parser.parse_args()
     async def run():
         if args.command == "check":
             print(json.dumps(await accept_tabular(), sort_keys=True))
             return
+        if args.command == "check-edits":
+            from .tabular_edits import accept_edits
+            print(json.dumps(await accept_edits(), sort_keys=True))
+            return
         dependencies()
         from expose_api import serve
         from spatial_ui import HTTPTableClient
-        async with tabular_application(args.database) as service:
+        async with tabular_application(args.database, editable=args.editable) as service:
             async with serve(service.app, port=0) as server:
                 origin = f"http://127.0.0.1:{server.sockets[0].getsockname()[1]}"
-                client = await asyncio.to_thread(HTTPTableClient.open, transport(origin, args.principal), "/work-items")
-                with make_ui(client).make_server(args.port) as ui:
+                client = await asyncio.to_thread(HTTPTableClient.open, transport(origin, args.principal), "/work-items", key_column="key" if args.editable else None)
+                with make_ui(client, editable=args.editable).make_server(args.port) as ui:
                     thread = threading.Thread(target=ui.serve_forever, kwargs={"poll_interval": .02}, daemon=True)
                     thread.start()
                     try:
