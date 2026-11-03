@@ -65,5 +65,16 @@ drafts on conflicts, explicit merge, durable reopen and checked deletion.
 The accepted component's broader Chromium evidence remains in the UI matrix;
 the generated-project checks verify the selected assembly and public forms.
 
+Select `--profile live` for a protected native ASGI factory. Its command exposes
+`check`; the application owner supplies the persistent database, exact origin,
+current synchronous verifier, explicit principal/credential bindings and an
+HTTP/WebSocket host through `create_application(...)`. There is no generated
+listener, login route, token or environment-secret template. The generated README
+describes cookie provisioning, principal isolation and drained restart/backup
+requirements. Temporary checks generate disposable credentials in memory and
+verify protected REST, concealed denial, native snapshots, revocation, reopen
+and complete worker cleanup. The accepted live matrix retains broader Chromium,
+cross-process delivery and reconnect evidence; generation chooses that reference.
+
 Implementation and acceptance: [CA-09](https://github.com/outside-labs/compose_application/issues/9),
 [STYLE-01–06](https://github.com/outside-labs/compose_application/issues/22).

@@ -38,6 +38,35 @@ class SelectionTests(unittest.TestCase):
 
 
 class RenderTests(unittest.TestCase):
+    def test_live_factory_has_no_ambient_configuration_or_listener_command(self):
+        spec = ProjectSpec("garden-live", "live")
+        files = render_project(spec)
+        for path, source in files.items():
+            if path.endswith(".py"):
+                compile(source, path, "exec")
+        self.assertEqual(tomllib.loads(files["pyproject.toml"])["project"]["dependencies"], [spec.dependency])
+        self.assertNotIn("serve", files["src/garden_live/__main__.py"])
+        self.assertNotIn("getenv", files["src/garden_live/app.py"])
+        self.assertIn("required keyword", files["README.md"])
+
+    @unittest.skipUnless(importlib.util.find_spec("spatial_ui") and importlib.util.find_spec("expose_api"),
+                         "optional live profile not installed")
+    def test_generated_live_access_snapshots_reopen_and_cleanup(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory) / "project"
+            create_project(ProjectSpec("garden-live", "live"), root)
+            sys.path.insert(0, str(root / "src"))
+            try:
+                from garden_live.checks import phase
+                database = root / "check.sqlite3"
+                self.assertEqual(asyncio.run(phase(database, "write"))["checks"], 10)
+                self.assertEqual(asyncio.run(phase(database, "reload"))["checks"], 5)
+            finally:
+                sys.path.pop(0)
+                for name in tuple(sys.modules):
+                    if name == "garden_live" or name.startswith("garden_live."):
+                        del sys.modules[name]
+
     def test_service_is_installable_selected_source(self):
         spec = ProjectSpec("garden-board", "service")
         files = render_project(spec)
