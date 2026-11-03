@@ -13,9 +13,9 @@ with `enforce-type` validation and a pocket-python Track B application target.
 - Runtime dependencies: none in the initial package foundation
 
 The component libraries remain independently useful and independently released.
-Application profiles will explicitly select integrations and dependencies.
-The current package is an installable foundation; application assembly APIs,
-storage adapters, reference applications and browser runtime support are planned.
+Application profiles explicitly select integrations and dependencies. The source
+provides owned persistent REST and typed UI references. Track B browser-local
+runtime support retains its separate application gates.
 
 ## Plan and development queue
 
@@ -61,3 +61,13 @@ The [compatibility matrix](docs/compatibility.md) qualifies immutable minimum
 and current development profiles, installed artifacts and code-upgrade recovery.
 CI retains exact per-platform receipts; browser application acceptance remains
 separate from CPython service support.
+
+## Typed UI reference
+
+The optional [persistent typed UI](docs/ui-reference.md) combines public spatial_ui
+forms with the checked REST reference. Use `uv sync --locked --extra ui`, then
+`uv run --locked --extra ui python -m compose_application.ui serve --database ./work-items.sqlite3`.
+The preview remains on loopback, with independent browser drafts, checked edits,
+explicit conflict/merge choices and durable SQLite records. The `check` command
+provides 15 form/REST checks across process restart; CI also exercises the actual
+UI in Chromium and the optional profile in installed wheel/source environments.

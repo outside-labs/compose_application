@@ -104,16 +104,33 @@ def upgrade_phase(python, work, database, phase):
     return json.loads(run(python, "-I", "-c", code, database, phase, cwd=work, capture=True))
 
 
+def qualify_ui(python, work, expected):
+    probe = '''
+import importlib.metadata as metadata, json
+distribution = metadata.distribution("spatial-ui")
+direct = json.loads(distribution.read_text("direct_url.json") or "{}")
+print(json.dumps({"spatial-ui": {"version": distribution.version, "revision": direct.get("vcs_info", {}).get("commit_id")}}))
+'''
+    packages = json.loads(run(python, "-I", "-c", probe, cwd=work, capture=True))
+    if packages != expected["packages"]:
+        raise RuntimeError("Installed UI packages do not match their qualified source profile.")
+    reference = json.loads(run(python, "-I", "-m", "compose_application.ui", "check", cwd=work, capture=True))
+    if reference["checks"] != 15 or reference["process_restart"] is not True:
+        raise RuntimeError("UI acceptance did not provide the complete restart receipt.")
+    return {"packages": packages, "reference": reference}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--service", action="store_true", help="qualify the optional service profile in both installed artifacts")
     parser.add_argument("--matrix", action="store_true", help="qualify the finite minimum/current matrix and code upgrades")
+    parser.add_argument("--ui", action="store_true", help="qualify the optional typed UI in both installed artifacts")
     parser.add_argument("--report", type=Path, help="write a machine-readable receipt, including failure phase")
     args = parser.parse_args()
     project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
     if project["dependencies"]:
         raise RuntimeError("The initial package foundation declares no runtime dependencies.")
-    manifest = json.loads((ROOT / "docs/compatibility-v1.json").read_text()) if args.matrix else None
+    manifest = json.loads((ROOT / "docs/compatibility-v1.json").read_text()) if args.matrix or args.ui else None
     if args.matrix and (sys.implementation.name != "cpython" or sys.version_info[:2] != (3, 14)
                         or platform.system() not in manifest["operating_systems"]):
         parser.error("This finite matrix qualifies CPython 3.14 on Linux, macOS and Windows.")
@@ -154,11 +171,16 @@ def main():
                 report["profiles"].append(receipt)
                 if receipt["package_sha256"] != package_digest(ROOT / "src/compose_application"):
                     raise RuntimeError("Installed package bytes differ from the candidate source.")
-                if args.service or args.matrix:
+                if args.service or args.matrix or args.ui:
                     stage(kind + "/optional-install")
                     run("uv", "pip", "install", "--python", python, str(artifact) + "[service]", cwd=work)
                     receipt.update(qualify_profile(python, work, manifest["current"] if manifest else None,
                                                   lambda name: stage(kind + "/" + name)))
+                if args.ui:
+                    stage(kind + "/ui-install")
+                    run("uv", "pip", "install", "--python", python, str(artifact) + "[ui]", cwd=work)
+                    stage(kind + "/ui-reference")
+                    receipt["ui"] = qualify_ui(python, work, manifest["ui"])
                 if minimum_python is not None:
                     stage(kind + "/minimum-to-current-upgrade")
                     database = work / ("upgrade-" + kind + ".sqlite3")
