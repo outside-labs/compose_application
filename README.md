@@ -22,6 +22,7 @@ storage adapters, reference applications and browser runtime support are planned
 - [Cohesion Block A Project](https://github.com/orgs/outside-labs/projects/18)
 - [Architecture charter](docs/cohesion-block-a.md)
 - [Shared contract register](docs/contracts.md)
+- [Track B workload and prerequisite probes](docs/track-b-workload.md)
 - [Roadmap and owning issues](docs/roadmap.md)
 
 Issues hold scope, acceptance criteria and dependencies. The organization Project
