@@ -1,0 +1,28 @@
+{
+  "format": "composition-compatibility/1",
+  "profile": "cpython-service/1",
+  "python": "CPython 3.14",
+  "operating_systems": ["Linux", "Darwin", "Windows"],
+  "minimum": {
+    "composition_revision": "5e9bdf4bb9479734f9214bbe241290bae28827fa",
+    "compose_version": "0.1.0.dev0",
+    "openapi": false,
+    "packages": {
+      "expose-api": {"version": "0.1.0", "revision": "aef200defd2514c38e3857f6278ea45aa577e369"},
+      "backpack-store": {"version": "0.1.0", "revision": "54f5a1e883fcc32f8d87cc553dc83dae0434300d"},
+      "enforce-type": {"version": "0.1.0", "revision": null}
+    }
+  },
+  "current": {
+    "openapi": true,
+    "packages": {
+      "expose-api": {"version": "0.1.0", "revision": "95d2e1ce0045a7e24e08041d217cf1bbcd1edd00"},
+      "backpack-store": {"version": "0.1.0", "revision": "54f5a1e883fcc32f8d87cc553dc83dae0434300d"},
+      "enforce-type": {"version": "0.1.0", "revision": null}
+    }
+  },
+  "track_b": {
+    "application_accepted": false,
+    "evidence": "Separate finite prerequisite probes; browser view/storage grants remain dependency gated."
+  }
+}

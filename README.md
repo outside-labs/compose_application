@@ -56,3 +56,8 @@ base imports remain independent of the integration packages.
 The [persistent REST reference](docs/rest-reference.md) adds synthetic work-item
 CRUD with checked revisions and real HTTP/process-restart acceptance. Run
 `python -m compose_application.reference check` in the selected service environment.
+
+The [compatibility matrix](docs/compatibility.md) qualifies immutable minimum
+and current development profiles, installed artifacts and code-upgrade recovery.
+CI retains exact per-platform receipts; browser application acceptance remains
+separate from CPython service support.

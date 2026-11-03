@@ -8,7 +8,7 @@ authors = [{ name = "ellainng" }]
 dependencies = []
 
 [project.optional-dependencies]
-service = ["expose-api[backpack] @ git+https://github.com/outside-labs/expose_api.git@aef200defd2514c38e3857f6278ea45aa577e369"]
+service = ["expose-api[backpack] @ git+https://github.com/outside-labs/expose_api.git@95d2e1ce0045a7e24e08041d217cf1bbcd1edd00"]
 
 [project.urls]
 Source = "https://github.com/outside-labs/compose_application"

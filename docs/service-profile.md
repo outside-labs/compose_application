@@ -3,7 +3,7 @@
 Install the selected checkout with `uv sync --locked --extra service`.
 The base package has zero runtime requirements and imports without optional
 packages or I/O. The `service` extra pins unreleased Expose API adapter source
-to `aef200defd2514c38e3857f6278ea45aa577e369`, transitively using Backpack
+to `95d2e1ce0045a7e24e08041d217cf1bbcd1edd00`, transitively using Backpack
 `54f5a1e883fcc32f8d87cc553dc83dae0434300d` and published Enforce Type 0.1.0.
 Published Expose API/Backpack 0.1.0 alone does not supply these development APIs.
 Package versions remain independent; this is an explicitly qualified source
