@@ -33,7 +33,7 @@ jobs:
       - run: uv run --locked python scripts/check_contracts.py
       - run: uv run --locked python -m unittest discover -s tests
       - run: uv run --locked python scripts/probe_track_b.py
-      - run: uv run --locked python scripts/check_distribution.py
+      - run: uv run --locked python scripts/check_distribution.py --service
 
   track-b-probes:
     name: Track B prerequisite probes (Node 24)
