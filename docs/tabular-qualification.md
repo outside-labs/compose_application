@@ -72,8 +72,10 @@ The reference requests 50 rows. Literal case-sensitive search admits eight
 declared text fields and 256 code points. The API admits 10,000 policy candidates
 and at most 1,000,000 approximate SQLite instructions per underlying query;
 request and response bounds are 65,536 and 4,194,304 bytes. Exhaustion is explicit.
-The UI editor uses the existing 4,096-byte typed form field bound. A caller
-declares the public immutable key column used for exact-key reloads.
+The UI editor uses the existing 4,096-byte typed form field bound. Oversized
+Unicode drafts remain local and can be corrected or discarded without failing
+the session; installed browser checks exercise that boundary. A caller declares
+the public immutable key column used for exact-key reloads.
 
 The row is the concurrency unit: different-cell writes to the same revision
 can conflict, while other rows have independent revisions. Keyset pages across
