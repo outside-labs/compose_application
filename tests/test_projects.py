@@ -52,6 +52,34 @@ class RenderTests(unittest.TestCase):
         files.clear()
         self.assertTrue(render_project(spec))
 
+    def test_ui_selects_only_its_qualified_extra(self):
+        spec = ProjectSpec("garden-ui", "ui")
+        files = render_project(spec)
+        self.assertEqual(tomllib.loads(files["pyproject.toml"])["project"]["dependencies"], [spec.dependency])
+        for path, source in files.items():
+            if path.endswith(".py"):
+                compile(source, path, "exec")
+        self.assertIn("Discard", files["README.md"])
+
+    @unittest.skipUnless(importlib.util.find_spec("spatial_ui"), "optional UI profile not installed")
+    def test_generated_ui_opens_real_page_and_preserves_form_drafts(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory) / "project"
+            spec = ProjectSpec("garden-ui", "ui")
+            self.assertTrue(create_project(spec, root))
+            sys.path.insert(0, str(root / "src"))
+            try:
+                from garden_ui.checks import phase
+                database = root / "check.sqlite3"
+                self.assertEqual(asyncio.run(phase(database, "write"))["checks"], 10)
+                self.assertEqual(asyncio.run(phase(database, "reload"))["checks"], 5)
+                self.assertFalse(create_project(spec, root))
+            finally:
+                sys.path.pop(0)
+                for name in tuple(sys.modules):
+                    if name == "garden_ui" or name.startswith("garden_ui."):
+                        del sys.modules[name]
+
     @unittest.skipUnless(importlib.util.find_spec("expose_api"), "optional service profile not installed")
     def test_generated_service_assembly_over_real_http_and_reopen(self):
         with TemporaryDirectory() as directory:
