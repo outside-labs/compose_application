@@ -8,6 +8,7 @@ authors = [{ name = "ellainng" }]
 dependencies = []
 
 [project.optional-dependencies]
+validation = ["expose-api[backpack,enforce-type] @ git+https://github.com/outside-labs/expose_api.git@c20ce4aa3487d4913b56ff244a031f83de2df285"]
 service = ["expose-api[backpack] @ git+https://github.com/outside-labs/expose_api.git@5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1"]
 ui = [
     "expose-api[backpack] @ git+https://github.com/outside-labs/expose_api.git@5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1",
@@ -29,3 +30,10 @@ build-backend = "uv_build"
 
 [dependency-groups]
 browser-tests = ["playwright==1.64.0"]
+
+[tool.uv]
+conflicts = [
+    [{ extra = "validation" }, { extra = "service" }],
+    [{ extra = "validation" }, { extra = "ui" }],
+    [{ extra = "validation" }, { extra = "live" }],
+]

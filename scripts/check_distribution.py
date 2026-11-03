@@ -133,6 +133,48 @@ def qualify_live(python, work):
     return receipt
 
 
+def qualify_validation(python, work, expected):
+    probe = '''
+import hashlib, importlib.metadata as metadata, json, pathlib, sys
+import enforce_type
+from expose_api.enforce_type import EnforceTypeSchema
+packages = {}
+for name in ("expose-api", "backpack-store", "enforce-type"):
+    distribution = metadata.distribution(name)
+    direct = json.loads(distribution.read_text("direct_url.json") or "{}")
+    packages[name] = {"version": distribution.version, "revision": direct.get("vcs_info", {}).get("commit_id")}
+root = pathlib.Path(enforce_type.__file__).parent
+assert root.is_relative_to(pathlib.Path(sys.prefix))
+digest = hashlib.sha256()
+for path in sorted(root.rglob("*")):
+    if path.is_file() and (path.suffix == ".py" or path.name == "py.typed"):
+        digest.update(path.relative_to(root).as_posix().encode() + b"\\0" + path.read_bytes())
+print(json.dumps({"packages": packages, "engine_source_sha256": digest.hexdigest()}))
+'''
+    receipt = json.loads(run(python, "-I", "-c", probe, cwd=work, capture=True))
+    if receipt["packages"] != expected["packages"] or receipt["engine_source_sha256"] != expected["engine_source_sha256"]:
+        raise RuntimeError("Installed validation packages differ from their qualified source profile.")
+    run("uv", "pip", "check", "--python", python, cwd=work)
+    checks = '''
+import json, sys, unittest
+suite = unittest.TestLoader().discover(sys.argv[1], pattern="test_validation.py")
+result = unittest.TextTestRunner(verbosity=2).run(suite)
+assert result.wasSuccessful() and not result.skipped and result.testsRun == 5
+print(json.dumps({"tests": result.testsRun, "skipped": len(result.skipped), "passed": True}))
+'''
+    receipt["lifecycle"] = json.loads(run(python, "-I", "-W", "error::ResourceWarning", "-c", checks,
+                                          work / "tests", cwd=work, capture=True))
+    receipt["reference"] = json.loads(run(python, "-I", "-W", "error::ResourceWarning", "-m",
+        "compose_application.reference", "check", "--validation", "enforce-type", cwd=work, capture=True))
+    reference = receipt["reference"]
+    if (reference.get("profile") != expected["profile"] or reference.get("checks") != 16
+            or reference.get("process_restart") is not True
+            or [phase.get("phase") for phase in reference["phases"]] != ["write", "reload"]
+            or not all(phase.get("passed") is True for phase in reference["phases"])):
+        raise RuntimeError("Validation reference did not provide complete checked HTTP/process acceptance.")
+    return receipt
+
+
 def qualify_projects(generator, work, kind, manifest, stage):
     """Install the emitted projects normally, including their immutable dependencies."""
     receipts = []
@@ -216,18 +258,19 @@ def main():
     parser.add_argument("--ui", action="store_true", help="qualify the optional typed UI in both installed artifacts")
     parser.add_argument("--live", action="store_true", help="qualify protected native/process live checks in both artifacts")
     parser.add_argument("--projects", action="store_true", help="install and check generated service/ui/live projects from both artifacts")
+    parser.add_argument("--validation", action="store_true", help="qualify the separate compiled validation service profile in both artifacts")
     parser.add_argument("--report", type=Path, help="write a machine-readable receipt, including failure phase")
     args = parser.parse_args()
     project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
     if project["dependencies"]:
         raise RuntimeError("The initial package foundation declares no runtime dependencies.")
-    manifest = json.loads((ROOT / "docs/compatibility-v1.json").read_text()) if args.matrix or args.ui or args.live or args.projects else None
+    manifest = json.loads((ROOT / "docs/compatibility-v1.json").read_text()) if args.matrix or args.ui or args.live or args.projects or args.validation else None
     if args.matrix and (sys.implementation.name != "cpython" or sys.version_info[:2] != (3, 14)
                         or platform.system() not in manifest["operating_systems"]):
         parser.error("This finite matrix qualifies CPython 3.14 on Linux, macOS and Windows.")
     revision = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True)
     changes = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=ROOT, capture_output=True, text=True)
-    report = {"format": "composition-compatibility/1", "python": platform.python_version(),
+    report = {"format": "composition-compatibility/1", "python": platform.python_version(), "machine": platform.machine(),
               "os": platform.system(), "source_revision": revision.stdout.strip() if revision.returncode == 0 else None,
               "source_clean": changes.returncode == 0 and not changes.stdout.strip(), "passed": False, "profiles": []}
     def stage(name):
@@ -284,6 +327,12 @@ def main():
                                            upgrade_phase(python, work, database, "reload")]
                 if args.projects:
                     receipt["projects"] = qualify_projects(python, work, kind, manifest, stage)
+                if args.validation:
+                    stage(kind + "/validation-install")
+                    validation_python = environment(work / (kind + "-validation"))
+                    run("uv", "pip", "install", "--python", validation_python, str(artifact) + "[validation]", cwd=work)
+                    stage(kind + "/validation-reference")
+                    receipt["validation"] = qualify_validation(validation_python, work, manifest["validation"])
                 print(f"Installed {kind} passed: {artifact.name}", flush=True)
         report["passed"], report["phase"] = True, "complete"
     except Exception as error:

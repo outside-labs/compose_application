@@ -11,7 +11,7 @@ import re
 import sys
 from tempfile import TemporaryDirectory
 
-from .service import ServiceConfig, _dependencies, application
+from .service import ServiceConfig, _dependencies, _validation_profile, application
 
 
 @dataclass(frozen=True)
@@ -66,9 +66,10 @@ class _RevisionApp:
 
 
 @asynccontextmanager
-async def reference_application(database):
+async def reference_application(database, *, validation="builtin"):
     """Open the public synthetic work-item example; caller owns local HTTP serving."""
-    api, adapter = _dependencies()
+    profile = _validation_profile(validation)
+    api, adapter = _dependencies(extra="validation" if validation == "enforce-type" else "service")
     expected, returned = ContextVar("expected_revision", default=None), ContextVar("returned_revision", default=None)
     def revision():
         value = expected.get()
@@ -91,7 +92,8 @@ async def reference_application(database):
         async def delete(self, key):
             await self.delete_checked(key, expected_revision=revision())
     config = ServiceConfig(WorkItem, Path(database), namespace="work_items", table="app_work_items",
-                           type_key="example.work_item", id_field="key", resource_path="/work-items", public=True)
+                           type_key="example.work_item", id_field="key", resource_path="/work-items", public=True,
+                           profile=profile)
     async with application(config, store_type=CheckedStore) as service:
         service.app = _RevisionApp(service.app, expected, returned)
         yield service
@@ -123,9 +125,9 @@ async def _exchange(port, method, path, *, data=None, revision=None, headers=())
         await writer.wait_closed()
 
 
-async def _accept_phase(database, phase):
+async def _accept_phase(database, phase, validation="builtin"):
     from expose_api import serve
-    async with reference_application(database) as service:
+    async with reference_application(database, validation=validation) as service:
         async with serve(service.app, port=0) as server:
             port, checks = server.sockets[0].getsockname()[1], 0
             async def check(method, path, status, *, data=None, revision=None, etag=None, code=None):
@@ -162,14 +164,15 @@ async def _accept_phase(database, phase):
             return {"phase": phase, "checks": checks, "passed": True}
 
 
-async def accept_reference():
+async def accept_reference(*, validation="builtin"):
     """Run real HTTP in two independent processes over a dedicated temporary DB."""
-    _dependencies()
+    profile = _validation_profile(validation)
+    _dependencies(extra="validation" if validation == "enforce-type" else "service")
     receipts = []
-    code = "import asyncio,json,sys; from compose_application.reference import _accept_phase; print(json.dumps(asyncio.run(_accept_phase(sys.argv[1],sys.argv[2]))))"
+    code = "import asyncio,json,sys; from compose_application.reference import _accept_phase; print(json.dumps(asyncio.run(_accept_phase(sys.argv[1],sys.argv[2],sys.argv[3]))))"
     with TemporaryDirectory(prefix="work-item-acceptance-") as directory:
         for phase in ("write", "reload"):
-            process = await asyncio.create_subprocess_exec(sys.executable, "-I", "-c", code, str(Path(directory) / "work-items.sqlite3"), phase,
+            process = await asyncio.create_subprocess_exec(sys.executable, "-I", "-c", code, str(Path(directory) / "work-items.sqlite3"), phase, validation,
                                                           stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
             try:
                 output, errors = await asyncio.wait_for(process.communicate(), 30)
@@ -180,23 +183,25 @@ async def accept_reference():
                 if process.returncode is None:
                     process.kill()
                     await process.communicate()
-    return {"profile": "cpython-service/1", "phases": receipts, "checks": sum(item["checks"] for item in receipts), "process_restart": True}
+    return {"profile": profile, "phases": receipts, "checks": sum(item["checks"] for item in receipts), "process_restart": True}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
-    commands.add_parser("check", help="exercise a dedicated temporary database across real processes")
+    check = commands.add_parser("check", help="exercise a dedicated temporary database across real processes")
     server = commands.add_parser("serve", help="serve synthetic work items on loopback")
     server.add_argument("--database", required=True, type=Path)
     server.add_argument("--port", type=int, default=8000)
+    for command in (check, server):
+        command.add_argument("--validation", choices=("builtin", "enforce-type"), default="builtin")
     arguments = parser.parse_args()
     async def run():
         if arguments.command == "check":
-            print(json.dumps(await accept_reference(), sort_keys=True))
+            print(json.dumps(await accept_reference(validation=arguments.validation), sort_keys=True))
         else:
             from expose_api import serve
-            async with reference_application(arguments.database) as service:
+            async with reference_application(arguments.database, validation=arguments.validation) as service:
                 async with serve(service.app, port=arguments.port):
                     print(f"Synthetic work items: http://127.0.0.1:{arguments.port}/work-items", flush=True)
                     await asyncio.Event().wait()

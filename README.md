@@ -1,5 +1,9 @@
 # compose_application
 
+The optional [compiled validation reference](docs/validation-reference.md)
+selects the expose-api Enforce Type adapter explicitly and qualifies it through
+persistent checked HTTP and independent process restart.
+
 Optional composition of typed storage, APIs and spatial interfaces.
 
 `compose_application` is the application integration home for **Cohesion Block A**.

@@ -4,6 +4,20 @@ Read current status and readiness in the [organization Project](https://github.c
 The following index records the task breakdown and owning issues. Candidate
 targets describe proposed scope; package versions and publication remain independent.
 
+## Optional compiled validation
+
+The selected expose-api adapter reuses Enforce Type's published value operations
+under the existing resource model and policy contracts. Its finite task sequence
+is [the assessment](https://github.com/outside-labs/enforce_type/issues/14),
+[explicit schema selection](https://github.com/outside-labs/expose_api/issues/52),
+[compiled values](https://github.com/outside-labs/expose_api/issues/53),
+[HTTP/access/persistent events](https://github.com/outside-labs/expose_api/issues/54),
+[installed artifacts](https://github.com/outside-labs/expose_api/issues/55), and
+[service composition](https://github.com/outside-labs/compose_application/issues/36).
+The [held-snapshot acceptance repair](https://github.com/outside-labs/expose_api/issues/59)
+has its own issue. The [separate service selection](validation-reference.md)
+preserves existing reference sources and base package independence.
+
 ## First rolling batch
 
 The first batch establishes contracts and reusable foundations before the
