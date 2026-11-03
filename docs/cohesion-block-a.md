@@ -7,6 +7,11 @@ applications and browser-local applications. Each library retains its own
 repository, public API, versioning and release lifecycle. `compose_application`
 owns application assembly, reference applications and integration acceptance.
 
+The [Tabular Interfaces plan](../IMPLEMENTATION_PLAN.md) extends this foundation
+with reusable read-only and editable tables. Its
+[cross-repository Project](https://github.com/orgs/outside-labs/projects/19)
+coordinates the owning storage, spreadsheet, API, UI and Markdown tasks.
+
 The first storage profile is relational SQLite. PostgreSQL follows after the
 model, transaction and query contracts have been exercised. pocket-python is a
 required application target through its existing Track B roadmap.
