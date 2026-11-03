@@ -37,5 +37,25 @@ an explicit database path. Live credentials and host configuration are supplied
 at runtime; generation never receives or stores credentials. Public hosting,
 package publication, PostgreSQL and Track B remain separately owned choices.
 
+## Create a service project
+
+```sh
+python -m compose_application.projects ./garden-board --name garden-board --profile service
+cd garden-board
+uv sync
+uv run garden-board check
+uv run garden-board serve --database ./work-items.sqlite3
+```
+
+The destination's parent must exist. Creation stages all source files in that
+parent, reserves a new destination exclusively, then publishes complete files
+using same-filesystem hard links. The selection receipt is published last.
+The local filesystem must support hard links. A failed/interrupted creation
+removes its unchanged files and empty directories; concurrent owner edits and
+additions survive. An incomplete destination without its receipt requires
+owner inspection before another creation request. Existing empty directories,
+files and symbolic-link destinations are refused. A matching repeat returns
+`created: false` and never recreates missing files or changes modification times.
+
 Implementation and acceptance: [CA-09](https://github.com/outside-labs/compose_application/issues/9),
 [STYLE-01–06](https://github.com/outside-labs/compose_application/issues/22).

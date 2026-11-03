@@ -1,10 +1,14 @@
 """Explicit selections for application-owned reference projects."""
 
 from dataclasses import dataclass
+import argparse
 import json
 import keyword
+import os
+from pathlib import Path
 import re
 import sys
+from tempfile import TemporaryDirectory
 
 
 REFERENCE_REVISION = "64fdd88efec0238fa5a224d490cabd5e6a49c766"
@@ -97,3 +101,101 @@ Publication and public hosting require separate setup.
             f"src/{spec.module}/app.py": SERVICE_APP,
             f"src/{spec.module}/__main__.py": COMMAND,
             f"src/{spec.module}/checks.py": checks}
+
+
+def _existing_selection(destination, spec):
+    if destination.is_symlink():
+        raise FileExistsError("Project destination must not be a symbolic link.")
+    if not destination.exists():
+        return False
+    receipt = destination / "reference-project.json"
+    try:
+        if not destination.is_dir() or receipt.is_symlink() or not receipt.is_file() or receipt.stat().st_size > 4096:
+            raise ValueError
+        selected = json.loads(receipt.read_text(encoding="utf-8"))
+        if selected != spec.selection():
+            raise ValueError
+    except (OSError, ValueError):
+        raise FileExistsError("Destination exists without a matching project selection; no files were changed.") from None
+    return True
+
+
+def create_project(spec: ProjectSpec, destination):
+    """Stage a new project and exclusively create its files; return True if created.
+
+    Matching repeat requests return False without examining or changing owned
+    source/data. The parent must exist. An incomplete project has no receipt.
+    """
+    files = render_project(spec)
+    destination = Path(destination).absolute()
+    if _existing_selection(destination, spec):
+        return False
+    # All template paths are internal, relative and validated before any write.
+    for name in files:
+        path = Path(name)
+        if path.is_absolute() or ".." in path.parts:
+            raise ValueError("Project template contains an invalid path.")
+    with TemporaryDirectory(prefix=".reference-project-", dir=destination.parent) as directory:
+        stage = Path(directory)
+        for name, content in files.items():
+            path = stage / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(content, encoding="utf-8", newline="\n")
+        try:
+            destination.mkdir()
+        except FileExistsError:
+            if _existing_selection(destination, spec):
+                return False
+            raise
+        created, directories = [], []
+        try:
+            # Publish the receipt last, after all application files exist.
+            names = [name for name in files if name != "reference-project.json"] + ["reference-project.json"]
+            for name in names:
+                path = destination / name
+                for parent in reversed(path.relative_to(destination).parents):
+                    if parent == Path("."):
+                        continue
+                    target = destination / parent
+                    if target not in directories:
+                        target.mkdir()
+                        directories.append(target)
+                # Same-filesystem hard links publish complete files exclusively
+                # without a partial-write window or overwriting a raced file.
+                os.link(stage / name, path)
+                created.append(path)
+        except BaseException:
+            # Remove only our own unchanged files. Concurrent owner additions
+            # and edits survive; nonempty directories are never removed.
+            for path in reversed(created):
+                try:
+                    expected = files[path.relative_to(destination).as_posix()]
+                    if not path.is_symlink() and path.read_text(encoding="utf-8") == expected:
+                        path.unlink()
+                except OSError:
+                    pass
+            for path in [*reversed(directories), destination]:
+                try:
+                    path.rmdir()
+                except OSError:
+                    pass
+            raise
+    return True
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("destination", type=Path)
+    parser.add_argument("--name", required=True)
+    parser.add_argument("--profile", choices=PROFILES, required=True)
+    arguments = parser.parse_args()
+    try:
+        spec = ProjectSpec(arguments.name, arguments.profile)
+        created = create_project(spec, arguments.destination)
+    except (OSError, ValueError) as error:
+        parser.exit(2, f"Project creation refused: {error}\n")
+    print(json.dumps({"created": created, "selection": spec.selection()}, sort_keys=True))
+
+
+if __name__ == "__main__":
+    main()
