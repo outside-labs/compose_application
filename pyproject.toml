@@ -20,7 +20,7 @@ live = [
 ]
 
 tabular = [
-    "expose-api[backpack] @ git+https://github.com/outside-labs/expose_api.git@248ea04ff9ade8973e74cc2122e66f8933c4fb97",
+    "expose-api[backpack] @ git+https://github.com/outside-labs/expose_api.git@ef046d0e48e5b0828e0fef422f4516b8852c8860",
     "spatial-ui @ git+https://github.com/outside-labs/spatial_ui.git@777502d655eb00aa5285e73b272030520ae77fa6",
     "headless-spreadsheets @ git+https://github.com/outside-labs/headless_spreadsheets.git@b0902fbf1c8b51ff0de167de697aee65bc83ca80",
 ]
