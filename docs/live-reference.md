@@ -37,9 +37,12 @@ with HttpOnly, SameSite=Strict, Path=/ and Secure on HTTPS. Tokens are bounded
 opaque application inputs and never enter HTML, URLs, WebSocket subprotocols,
 messages or receipts. The synchronous verifier must be nonblocking, bounded and
 return the currently valid immutable Principal, or None. Exceptions and
-awaitables fail closed. Expiry/revocation and credential replacement are owned
-by that verifier. There is no external identity provider, credential database or
-login endpoint in this profile.
+awaitables fail closed. The verifier owns immediate expiry/revocation. Rotating
+a selected token requires replacement configuration and a drained restart.
+Existing sockets remain bound to the credential verified at their handshake;
+for identity changes, stop/reload the page and revoke that credential. There is
+no external identity provider, credential database or login endpoint in this
+profile.
 
 Select at most eight credential bindings with globally unique subjects and the
 `work-items` grant. Each selected principal owns a distinct native UI adapter,
