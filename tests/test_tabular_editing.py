@@ -24,7 +24,7 @@ class EditableReferenceTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(receipt["passed"])
         self.assertTrue(receipt["process_restart"])
         self.assertEqual([r["phase"] for r in receipt["phases"]], ["write", "reopen"])
-        self.assertGreaterEqual(receipt["checks"], 26)
+        self.assertEqual(receipt["checks"], 27)
 
     async def test_independent_headless_consumer_and_http_use_same_registered_rows(self):
         from compose_application.headless_tabular import accept_headless, headless_application

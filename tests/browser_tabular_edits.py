@@ -69,6 +69,10 @@ class BrowserEditableTabular(unittest.TestCase):
                         second.get_by_role("button", name="Save cell", exact=True).click()
                         self.state(second, "invalid")
                         expect(second.get_by_label("Cell value", exact=True)).to_have_value("")
+                        second.get_by_label("Cell value", exact=True).fill("é" * 2100)
+                        expect(second.get_by_label("Cell value", exact=True)).to_have_attribute("aria-invalid", "true")
+                        expect(second.locator("#sui-status")).to_contain_text("exceeds 4,096 UTF-8 bytes")
+                        second.get_by_label("Cell value", exact=True).press("Enter")
                         second.get_by_label("Cell value", exact=True).press("Escape")
                         self.begin(second, "key")
                         self.state(second, "read_only")
@@ -95,7 +99,7 @@ class BrowserEditableTabular(unittest.TestCase):
                 self.assertEqual(errors, [])
                 Path("tabular-edit-browser-receipt.json").write_text(json.dumps(dict(profile="cpython-tabular/1", browser="Chromium",
                     editable=True, durable_target=True, independent_drafts=True, stale_conflict=True, explicit_reapply=True,
-                    invalid_read_only=True, unrelated_fields_preserved=True, process_restart=True, graceful_close=True,
+                    invalid_read_only=True, unicode_draft_bound=True, unrelated_fields_preserved=True, process_restart=True, graceful_close=True,
                     widths=[390, 1280], reduced_motion=True, passed=True), indent=2) + "\n")
             finally:
                 browser.close()

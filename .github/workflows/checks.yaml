@@ -151,13 +151,9 @@ jobs:
           python-version: '3.14'
       - run: uv sync --locked --extra tabular --group browser-tests
       - run: uv run --frozen python -m playwright install --with-deps chromium
-      - run: uv run --frozen python -W error::ResourceWarning -m unittest discover -s tests -p browser_tabular.py -v
-      - run: uv run --frozen python -W error::ResourceWarning -m unittest discover -s tests -p test_tabular_editing.py -v
-      - run: uv run --frozen python -W error::ResourceWarning -m unittest discover -s tests -p browser_tabular_edits.py -v
+      - run: uv run --frozen python -W error::ResourceWarning scripts/check_distribution.py --tabular --tabular-browser --report tabular-installed-browser.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: tabular-browser
-          path: |
-            tabular-browser-receipt.json
-            tabular-edit-browser-receipt.json
+          path: tabular-installed-browser.json
           if-no-files-found: error

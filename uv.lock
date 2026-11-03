@@ -60,7 +60,7 @@ service = [
 tabular = [
     { name = "expose-api", version = "0.1.0", source = { git = "https://github.com/outside-labs/expose_api.git?rev=cdff4682db5decc3d6bdb55f7ba5a6a2105f154a#cdff4682db5decc3d6bdb55f7ba5a6a2105f154a" }, extra = ["backpack"], marker = "extra == 'extra-19-compose-application-tabular' or (extra == 'extra-19-compose-application-live' and extra == 'extra-19-compose-application-validation') or (extra == 'extra-19-compose-application-service' and extra == 'extra-19-compose-application-validation') or (extra == 'extra-19-compose-application-ui' and extra == 'extra-19-compose-application-validation') or (extra != 'extra-19-compose-application-live' and extra != 'extra-19-compose-application-service' and extra != 'extra-19-compose-application-ui' and extra != 'extra-19-compose-application-validation')" },
     { name = "headless-spreadsheets" },
-    { name = "spatial-ui", version = "0.1.0", source = { git = "https://github.com/outside-labs/spatial_ui.git?rev=0b272fd4f69d0b93126c90fae942c09cef25b5cc#0b272fd4f69d0b93126c90fae942c09cef25b5cc" } },
+    { name = "spatial-ui", version = "0.1.0", source = { git = "https://github.com/outside-labs/spatial_ui.git?rev=1c782cf8c899d605caad840c2f0d15d997d9ecc8#1c782cf8c899d605caad840c2f0d15d997d9ecc8" } },
 ]
 ui = [
     { name = "expose-api", version = "0.1.0", source = { git = "https://github.com/outside-labs/expose_api.git?rev=5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1#5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1" }, extra = ["backpack"], marker = "extra == 'extra-19-compose-application-ui' or (extra == 'extra-19-compose-application-live' and extra == 'extra-19-compose-application-tabular') or (extra == 'extra-19-compose-application-live' and extra == 'extra-19-compose-application-validation') or (extra == 'extra-19-compose-application-service' and extra == 'extra-19-compose-application-tabular') or (extra == 'extra-19-compose-application-service' and extra == 'extra-19-compose-application-validation') or (extra == 'extra-19-compose-application-tabular' and extra == 'extra-19-compose-application-validation')" },
@@ -84,7 +84,7 @@ requires-dist = [
     { name = "expose-api", extras = ["backpack", "enforce-type"], marker = "extra == 'validation'", git = "https://github.com/outside-labs/expose_api.git?rev=c20ce4aa3487d4913b56ff244a031f83de2df285" },
     { name = "headless-spreadsheets", marker = "extra == 'tabular'", git = "https://github.com/outside-labs/headless_spreadsheets.git?rev=6eaff1b3764910720956c66559dce3f34a430ee2" },
     { name = "spatial-ui", marker = "extra == 'live'", git = "https://github.com/outside-labs/spatial_ui.git?rev=9e473497febdc505e54ba25536b65b68722d264b" },
-    { name = "spatial-ui", marker = "extra == 'tabular'", git = "https://github.com/outside-labs/spatial_ui.git?rev=0b272fd4f69d0b93126c90fae942c09cef25b5cc" },
+    { name = "spatial-ui", marker = "extra == 'tabular'", git = "https://github.com/outside-labs/spatial_ui.git?rev=1c782cf8c899d605caad840c2f0d15d997d9ecc8" },
     { name = "spatial-ui", marker = "extra == 'ui'", git = "https://github.com/outside-labs/spatial_ui.git?rev=9e473497febdc505e54ba25536b65b68722d264b" },
 ]
 provides-extras = ["validation", "service", "ui", "live", "tabular"]
@@ -220,7 +220,7 @@ wheels = [
 [[package]]
 name = "spatial-ui"
 version = "0.1.0"
-source = { git = "https://github.com/outside-labs/spatial_ui.git?rev=0b272fd4f69d0b93126c90fae942c09cef25b5cc#0b272fd4f69d0b93126c90fae942c09cef25b5cc" }
+source = { git = "https://github.com/outside-labs/spatial_ui.git?rev=1c782cf8c899d605caad840c2f0d15d997d9ecc8#1c782cf8c899d605caad840c2f0d15d997d9ecc8" }
 
 [[package]]
 name = "spatial-ui"

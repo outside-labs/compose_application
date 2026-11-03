@@ -1,0 +1,22 @@
+{
+  "format": "tabular-compatibility/1",
+  "profile": "cpython-tabular/1",
+  "python": "CPython 3.14",
+  "operating_systems": ["Linux", "Darwin", "Windows"],
+  "current_sources": "tabular-sources-v1.json",
+  "minimum": {
+    "composition_revision": "7b32ec3de8d39751271c53e0eb158d7ca894d785",
+    "composition_version": "0.1.0.dev0",
+    "capability": "read-only",
+    "packages": {
+      "expose-api": {"version": "0.1.0", "revision": "ef046d0e48e5b0828e0fef422f4516b8852c8860"},
+      "spatial-ui": {"version": "0.1.0", "revision": "80b0adec28a6dcc773cf80e708461e0ac43f3576"},
+      "backpack-store": {"version": "0.1.0", "revision": "9a691aa551bf7fb42134168452bbdb2e1d454928"},
+      "enforce-type": {"version": "0.1.0", "revision": null},
+      "headless-spreadsheets": {"version": "0.1.0", "revision": "b0902fbf1c8b51ff0de167de697aee65bc83ca80"}
+    }
+  },
+  "current_capabilities": ["read-only", "checked-scalar-editing", "headless-backpack"],
+  "limits": {"page_rows": 1000, "page_cells": 16000, "policy_scan_rows": 10000, "sqlite_instructions": 1000000},
+  "extensions": ["collection-refresh", "bulk-editing", "rich-persistence-codecs", "dynamic-schema", "postgresql", "browser-local-runtime"]
+}
