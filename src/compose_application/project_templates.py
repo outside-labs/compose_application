@@ -77,7 +77,7 @@ def require(condition):
 
 async def accept():
     phases = []
-    code = "import asyncio,json,sys; from __PROJECT_MODULE__.checks import phase; print(json.dumps(asyncio.run(phase(sys.argv[1],sys.argv[2]))))"
+    code = "import asyncio,faulthandler,json,sys; from __PROJECT_MODULE__.checks import phase; faulthandler.dump_traceback_later(15); print(json.dumps(asyncio.run(phase(sys.argv[1],sys.argv[2])))); faulthandler.cancel_dump_traceback_later()"
     with TemporaryDirectory(prefix="reference-project-check-") as directory:
         for name in ("write", "reload"):
             process = await asyncio.create_subprocess_exec(
@@ -85,7 +85,13 @@ async def accept():
                 str(Path(directory) / "check.sqlite3"), name,
                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
             try:
-                output, errors = await asyncio.wait_for(process.communicate(), 30)
+                try:
+                    output, errors = await asyncio.wait_for(process.communicate(), 30)
+                except TimeoutError:
+                    if process.returncode is None:
+                        process.kill()
+                    _, errors = await process.communicate()
+                    raise RuntimeError("Generated check timed out during " + name + ": " + errors.decode("utf-8", errors="replace")[-8000:]) from None
                 if process.returncode:
                     raise RuntimeError("Generated check failed during " + name + ": " + errors.decode("utf-8", errors="replace")[-4000:])
                 phases.append(json.loads(output))
