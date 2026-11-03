@@ -84,13 +84,14 @@ async def accept():
                 sys.executable, "-I", "-W", "error::ResourceWarning", "-c", code,
                 str(Path(directory) / "check.sqlite3"), name,
                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            communication = asyncio.create_task(process.communicate())
             try:
                 try:
-                    output, errors = await asyncio.wait_for(process.communicate(), 30)
+                    output, errors = await asyncio.wait_for(asyncio.shield(communication), 30)
                 except TimeoutError:
                     if process.returncode is None:
                         process.kill()
-                    _, errors = await process.communicate()
+                    _, errors = await communication
                     raise RuntimeError("Generated check timed out during " + name + ": " + errors.decode("utf-8", errors="replace")[-8000:]) from None
                 if process.returncode:
                     raise RuntimeError("Generated check failed during " + name + ": " + errors.decode("utf-8", errors="replace")[-4000:])
@@ -98,7 +99,7 @@ async def accept():
             finally:
                 if process.returncode is None:
                     process.kill()
-                    await process.communicate()
+                await communication
     return {"profile": "__PROJECT_PROFILE__", "checks": sum(item["checks"] for item in phases),
             "phases": phases, "process_restart": True, "passed": True}
 '''
