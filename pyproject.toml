@@ -19,6 +19,12 @@ live = [
     "spatial-ui @ git+https://github.com/outside-labs/spatial_ui.git@9e473497febdc505e54ba25536b65b68722d264b",
 ]
 
+tabular = [
+    "expose-api[backpack] @ git+https://github.com/outside-labs/expose_api.git@ef046d0e48e5b0828e0fef422f4516b8852c8860",
+    "spatial-ui @ git+https://github.com/outside-labs/spatial_ui.git@80b0adec28a6dcc773cf80e708461e0ac43f3576",
+    "headless-spreadsheets @ git+https://github.com/outside-labs/headless_spreadsheets.git@b0902fbf1c8b51ff0de167de697aee65bc83ca80",
+]
+
 [project.urls]
 Source = "https://github.com/outside-labs/compose_application"
 Issues = "https://github.com/outside-labs/compose_application/issues"
@@ -36,4 +42,8 @@ conflicts = [
     [{ extra = "validation" }, { extra = "service" }],
     [{ extra = "validation" }, { extra = "ui" }],
     [{ extra = "validation" }, { extra = "live" }],
+    [{ extra = "tabular" }, { extra = "validation" }],
+    [{ extra = "tabular" }, { extra = "service" }],
+    [{ extra = "tabular" }, { extra = "ui" }],
+    [{ extra = "tabular" }, { extra = "live" }],
 ]

@@ -133,6 +133,31 @@ def qualify_live(python, work):
     return receipt
 
 
+def qualify_tabular(python, work):
+    expected = json.loads((ROOT / "docs/tabular-sources-v1.json").read_text())["packages"]
+    probe = '''
+import importlib.metadata as m, json
+result = {}
+for name in ("expose-api", "spatial-ui", "backpack-store", "enforce-type", "headless-spreadsheets"):
+    package = m.distribution(name)
+    direct = json.loads(package.read_text("direct_url.json") or "{}")
+    result[name] = {"version": package.version, "revision": direct.get("vcs_info", {}).get("commit_id")}
+print(json.dumps(result))
+'''
+    packages = json.loads(run(python, "-I", "-c", probe, cwd=work, capture=True))
+    if packages != expected:
+        raise RuntimeError("Installed tabular sources differ from the qualified profile.")
+    checks = '''
+import sys,unittest
+suite = unittest.defaultTestLoader.discover(sys.argv[1], pattern="test_tabular_reference.py")
+result = unittest.TextTestRunner(verbosity=2).run(suite)
+assert result.wasSuccessful() and not result.skipped and result.testsRun == 4
+'''
+    run(python, "-I", "-W", "error::ResourceWarning", "-c", checks, work / "tests", cwd=work)
+    return {"profile": "cpython-tabular/1", "packages": packages, "reference_tests": 4,
+            "http_checks": 18, "process_restart": True}
+
+
 def qualify_validation(python, work, expected):
     probe = '''
 import hashlib, importlib.metadata as metadata, json, pathlib, sys
@@ -259,6 +284,7 @@ def main():
     parser.add_argument("--live", action="store_true", help="qualify protected native/process live checks in both artifacts")
     parser.add_argument("--projects", action="store_true", help="install and check generated service/ui/live projects from both artifacts")
     parser.add_argument("--validation", action="store_true", help="qualify the separate compiled validation service profile in both artifacts")
+    parser.add_argument("--tabular", action="store_true", help="qualify the separate persisted read-only table profile in both artifacts")
     parser.add_argument("--report", type=Path, help="write a machine-readable receipt, including failure phase")
     args = parser.parse_args()
     project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
@@ -333,6 +359,12 @@ def main():
                     run("uv", "pip", "install", "--python", validation_python, str(artifact) + "[validation]", cwd=work)
                     stage(kind + "/validation-reference")
                     receipt["validation"] = qualify_validation(validation_python, work, manifest["validation"])
+                if args.tabular:
+                    stage(kind + "/tabular-install")
+                    tabular_python = environment(work / (kind + "-tabular"))
+                    run("uv", "pip", "install", "--python", tabular_python, str(artifact) + "[tabular]", cwd=work)
+                    stage(kind + "/tabular-reference")
+                    receipt["tabular"] = qualify_tabular(tabular_python, work)
                 print(f"Installed {kind} passed: {artifact.name}", flush=True)
         report["passed"], report["phase"] = True, "complete"
     except Exception as error:

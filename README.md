@@ -101,3 +101,7 @@ Select `service` for checked REST, `ui` for the loopback typed workspace, or
 origin and host. Each project pins the accepted immutable composition source.
 Generation installs nothing. Matching repeat requests leave owner edits and
 data untouched. See the [layout, setup and acceptance](docs/reference-projects.md).
+
+The optional [persistent read-only table reference](docs/tabular-reference.md)
+provides dataset sorting, literal search, column controls and pagination over
+protected registered records without changing stored values or revisions.
