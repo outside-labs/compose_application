@@ -1,0 +1,17 @@
+{
+  "contract_version": 1,
+  "profiles": ["cpython-service/1", "track-b-local/1", "connected-browser/1"],
+  "resources": [
+    {"collection": "work_items", "key": "item-001", "revision": "1", "value": {"title": "Check the garden", "done": false}},
+    {"collection": "work_items", "key": "item-001", "revision": "2", "value": {"title": "Check the garden", "done": true}}
+  ],
+  "errors": [
+    {"code": "validation_error", "message": "Resource validation failed.", "issues": [{"path": ["title"], "code": "required"}], "request_id": "request-001"},
+    {"code": "revision_conflict", "message": "Resource revision changed.", "issues": []}
+  ],
+  "revisions": {"first": "1", "beyond_javascript_integer": "9007199254740992", "last": "9223372036854775807"},
+  "proposed_events": [
+    {"contract_version": 1, "event_id": "event-001", "kind": "replaced", "collection": "work_items", "key": "item-001", "revision": "2", "value": {"title": "Check the garden", "done": true}, "subscription_id": "subscription-001", "generation": 3},
+    {"contract_version": 1, "event_id": "event-002", "kind": "deleted", "collection": "work_items", "key": "item-001", "revision": "3", "subscription_id": "subscription-001", "generation": 3}
+  ]
+}
