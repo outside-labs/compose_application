@@ -56,10 +56,13 @@ def render_project(spec: ProjectSpec):
     """Return detached UTF-8 source files without writing or installing anything."""
     if type(spec) is not ProjectSpec:
         raise TypeError("render_project() requires ProjectSpec.")
-    if spec.profile == "live":
-        raise ValueError("This renderer currently supports service and ui references.")
-    from .project_templates import COMMAND, HTTP_CHECKS, SERVICE_APP, SERVICE_PHASE, UI_APP, UI_PHASE
-    app_source, phase_source = (SERVICE_APP, SERVICE_PHASE) if spec.profile == "service" else (UI_APP, UI_PHASE)
+    from .project_templates import (CHECK_RUNNER, COMMAND, HTTP_CHECKS, SERVICE_APP, SERVICE_PHASE,
+                                    UI_APP, UI_PHASE, LIVE_APP, LIVE_COMMAND, LIVE_PHASE)
+    app_source, phase_source, helpers, command = {
+        "service": (SERVICE_APP, SERVICE_PHASE, HTTP_CHECKS, COMMAND),
+        "ui": (UI_APP, UI_PHASE, HTTP_CHECKS, COMMAND),
+        "live": (LIVE_APP, LIVE_PHASE, "", LIVE_COMMAND),
+    }[spec.profile]
     metadata = f'''[project]
 name = "{spec.name}"
 version = "0.1.0"
@@ -96,13 +99,53 @@ Publication and public hosting require separate setup.
 '''
     if spec.profile == "ui":
         readme += "\nThe UI opens at the printed loopback address. Browser drafts are independent;\nSave uses checked revisions. Load refreshes the baseline while retaining edits\nfor an explicit merge; Discard replaces the draft with that baseline. Shutdown\nstops the UI listener/worker before closing REST and storage.\n"
-    checks = (HTTP_CHECKS + phase_source).replace("__PROJECT_MODULE__", spec.module).replace("__PROJECT_PROFILE__", spec.profile)
+    if spec.profile == "live":
+        readme = f'''# {spec.name}
+
+Application-owned protected `live` reference. Python 3.14+ and uv are required.
+Composition source: `{spec.source}`. Install and check with:
+
+```sh
+uv sync
+uv run {spec.name} check
+```
+
+`src/{spec.module}/app.py` exposes `create_application` with required keyword
+arguments: `database`, `origin`, `verify`, `credentials`. Supply a private local
+SQLite path, an exact HTTPS origin (HTTP only on loopback), a bounded synchronous
+current-credential verifier and 1–8 explicit `Credential(Principal(...), token)`
+bindings. Principals need globally unique subjects and the `work-items` scope.
+Import `Credential` from `compose_application.live` and `Principal` from
+`expose_api`. The verifier returns the currently valid Principal or None.
+
+Pass the returned application to your selected HTTP/WebSocket ASGI host with
+lifespan enabled. Construction opens no database, listener or worker. The host
+must preserve the exact Host, bound admission/headers/send deadlines and drain
+listeners before shutdown. One process owns the native UI sessions. No login,
+credential issuance, default credentials, external identity provider or host
+package is installed by this project. Provision the `work_identity` cookie with
+HttpOnly, SameSite=Strict, Path=/ and Secure for HTTPS. Never put tokens in
+source, URLs, receipts or logs. Stop/reload after identity changes; token-binding
+changes require a drained restart. Each callback/subscription checks current
+access; owner fields stay hidden and denial precedes revision comparison.
+
+The check creates runtime-only disposable identities, uses a temporary database
+across independent processes and tests protected checked REST, native WebSocket
+snapshots, revocation, durable reopen and cleanup. It does not start a listener
+or use your credentials/data. The accepted reference owns its separate fixed
+live table/journal. Every writer must use the same event-enabled profile;
+stop writers and verify backups before upgrades or restoring compatible data.
+Application source and data belong to you; repeated generation leaves them
+untouched. These are qualified development sources. Publication and public
+hosting remain separate from project generation and native acceptance.
+'''
+    checks = (CHECK_RUNNER + helpers + phase_source).replace("__PROJECT_MODULE__", spec.module).replace("__PROJECT_PROFILE__", spec.profile)
     return {"pyproject.toml": metadata, "README.md": readme,
             ".gitignore": ".venv/\n__pycache__/\n*.py[cod]\n*.sqlite3*\n.env\n",
             "reference-project.json": json.dumps(spec.selection(), indent=2, sort_keys=True) + "\n",
             f"src/{spec.module}/__init__.py": '"""Application-owned reference project."""\n',
             f"src/{spec.module}/app.py": app_source,
-            f"src/{spec.module}/__main__.py": COMMAND,
+            f"src/{spec.module}/__main__.py": command,
             f"src/{spec.module}/checks.py": checks}
 
 

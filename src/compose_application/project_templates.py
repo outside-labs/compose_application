@@ -61,39 +61,13 @@ if __name__ == "__main__":
     main()
 '''
 
-HTTP_CHECKS = '''"""Bounded HTTP acceptance helpers; no user database or credentials."""
+CHECK_RUNNER = '''"""Bounded acceptance using temporary data in independent processes."""
 
 import asyncio
 import json
 from pathlib import Path
 import sys
 from tempfile import TemporaryDirectory
-
-
-async def request(port, method, path, *, data=None, revision=None):
-    reader, writer = await asyncio.open_connection("127.0.0.1", port)
-    try:
-        body = b"" if data is None else json.dumps(data, allow_nan=False).encode()
-        headers = [f"{method} {path} HTTP/1.1", f"Host: 127.0.0.1:{port}",
-                   "Connection: close", f"Content-Length: {len(body)}"]
-        if data is not None:
-            headers.append("Content-Type: application/json")
-        if revision is not None:
-            headers.append(f'If-Match: "{revision}"')
-        writer.write(("\\r\\n".join(headers) + "\\r\\n\\r\\n").encode("ascii") + body)
-        await writer.drain()
-        raw = await asyncio.wait_for(reader.readuntil(b"\\r\\n\\r\\n"), 5)
-        status, *fields = raw.decode("latin-1").strip().split("\\r\\n")
-        fields = dict(field.lower().split(": ", 1) for field in fields)
-        size = int(fields.get("content-length", "0"))
-        if not 0 <= size <= 65536:
-            raise RuntimeError("Acceptance response exceeded its bound.")
-        payload = await asyncio.wait_for(reader.readexactly(size), 5)
-        value = json.loads(payload) if payload and "application/json" in fields.get("content-type", "") else payload.decode("utf-8")
-        return int(status.split()[1]), fields, value
-    finally:
-        writer.close()
-        await writer.wait_closed()
 
 
 def require(condition):
@@ -121,6 +95,34 @@ async def accept():
                     await process.communicate()
     return {"profile": "__PROJECT_PROFILE__", "checks": sum(item["checks"] for item in phases),
             "phases": phases, "process_restart": True, "passed": True}
+'''
+
+HTTP_CHECKS = '''
+
+async def request(port, method, path, *, data=None, revision=None):
+    reader, writer = await asyncio.open_connection("127.0.0.1", port)
+    try:
+        body = b"" if data is None else json.dumps(data, allow_nan=False).encode()
+        headers = [f"{method} {path} HTTP/1.1", f"Host: 127.0.0.1:{port}",
+                   "Connection: close", f"Content-Length: {len(body)}"]
+        if data is not None:
+            headers.append("Content-Type: application/json")
+        if revision is not None:
+            headers.append(f'If-Match: "{revision}"')
+        writer.write(("\\r\\n".join(headers) + "\\r\\n\\r\\n").encode("ascii") + body)
+        await writer.drain()
+        raw = await asyncio.wait_for(reader.readuntil(b"\\r\\n\\r\\n"), 5)
+        status, *fields = raw.decode("latin-1").strip().split("\\r\\n")
+        fields = dict(field.lower().split(": ", 1) for field in fields)
+        size = int(fields.get("content-length", "0"))
+        if not 0 <= size <= 65536:
+            raise RuntimeError("Acceptance response exceeded its bound.")
+        payload = await asyncio.wait_for(reader.readexactly(size), 5)
+        value = json.loads(payload) if payload and "application/json" in fields.get("content-type", "") else payload.decode("utf-8")
+        return int(status.split()[1]), fields, value
+    finally:
+        writer.close()
+        await writer.wait_closed()
 '''
 
 SERVICE_PHASE = '''
@@ -228,5 +230,127 @@ async def phase(database, name):
             check(await asyncio.to_thread(client.list) == ())
         else:
             raise ValueError("Unknown acceptance phase.")
+    return {"phase": name, "checks": checks, "closed": True}
+'''
+
+LIVE_APP = '''"""Application-owned protected live factory; the caller supplies its ASGI host."""
+
+from pathlib import Path
+from compose_application.live import LiveApplication, LiveConfig
+
+
+def create_application(*, database, origin, verify, credentials):
+    """Construct without I/O; the caller owns credentials, exact origin and lifespan."""
+    return LiveApplication(LiveConfig(database=Path(database), origin=origin,
+                                     verify=verify, credentials=credentials))
+'''
+
+LIVE_COMMAND = '''"""Check the protected live factory with disposable data and runtime-only identities."""
+
+import argparse
+import asyncio
+import json
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("command", choices=("check",))
+    parser.parse_args()
+    from .checks import accept
+    print(json.dumps(asyncio.run(accept()), sort_keys=True))
+
+
+if __name__ == "__main__":
+    main()
+'''
+
+LIVE_PHASE = '''
+
+async def request(app, method="GET", path="/work-items", *, token=None, data=None, revision=None):
+    body = b"" if data is None else json.dumps(data, allow_nan=False).encode()
+    headers = [(b"host", b"reference.example")]
+    if token is not None:
+        headers.append((b"authorization", ("Bearer " + token).encode()))
+    if data is not None:
+        headers.append((b"content-type", b"application/json"))
+    if revision is not None:
+        headers.append((b"if-match", ('"' + revision + '"').encode()))
+    incoming, outgoing = asyncio.Queue(), []
+    await incoming.put({"type": "http.request", "body": body})
+    async def send(event):
+        outgoing.append(event)
+    await asyncio.wait_for(app({"type": "http", "method": method, "path": path,
+        "root_path": "", "query_string": b"", "headers": headers}, incoming.get, send), 5)
+    return outgoing[0]["status"], dict(outgoing[0]["headers"]), b"".join(event.get("body", b"") for event in outgoing[1:])
+
+
+async def phase(database, name):
+    import secrets
+    import threading
+    from expose_api import Principal
+    from compose_application.live import Credential
+    from .app import create_application
+    alice = Principal("check-alice", scopes=frozenset({"work-items"}))
+    bob = Principal("check-bob", scopes=frozenset({"work-items"}))
+    first, second = secrets.token_urlsafe(24), secrets.token_urlsafe(24)
+    identities = {first: alice, second: bob}
+    threads = {thread.ident for thread in threading.enumerate()}
+    app = create_application(database=database, origin="https://reference.example", verify=identities.get,
+        credentials=(Credential(alice, first), Credential(bob, second)))
+    checks = 0
+    async def check(method, path, expected, **options):
+        nonlocal checks
+        result = await request(app, method, path, **options)
+        require(result[0] == expected)
+        checks += 1
+        return result
+    async with app:
+        await check("GET", "/work-items", 401)
+        if name == "write":
+            created = await check("POST", "/work-items", 201, token=first,
+                data={"key": "garden", "title": "Garden 🌱", "owner": alice.subject})
+            require(created[1].get(b"etag") == b'"1"' and "owner" not in json.loads(created[2]))
+            await check("GET", "/work-items/garden", 404, token=second)
+            await check("PATCH", "/work-items/garden", 404, token=second, revision="9", data={"done": True})
+            await check("PATCH", "/work-items/garden", 422, token=first, revision="1", data={"done": 1})
+            incoming, outgoing = asyncio.Queue(), asyncio.Queue()
+            scope = {"type": "websocket", "path": "/work-items/garden", "root_path": "", "query_string": b"",
+                "subprotocols": ["expose-api.events.v1"], "scheme": "wss", "headers": [
+                    (b"host", b"reference.example"), (b"origin", b"https://reference.example"),
+                    (b"cookie", ("work_identity=" + first).encode())]}
+            socket = asyncio.create_task(app(scope, incoming.get, outgoing.put))
+            try:
+                await incoming.put({"type": "websocket.connect"})
+                require((await asyncio.wait_for(outgoing.get(), 2))["type"] == "websocket.accept")
+                await incoming.put({"type": "websocket.receive", "text": '{"v":1,"type":"subscribe","cursor":null}'})
+                snapshot = json.loads((await asyncio.wait_for(outgoing.get(), 2))["text"])
+                require(snapshot["value"] == {"key": "garden", "title": "Garden 🌱", "done": False})
+                checks += 1
+                updated = await check("PATCH", "/work-items/garden", 200, token=first, revision="1", data={"done": True})
+                require(updated[1].get(b"etag") == b'"2"')
+                snapshot = json.loads((await asyncio.wait_for(outgoing.get(), 2))["text"])
+                require(snapshot["value"]["done"] is True and "owner" not in snapshot["value"])
+                checks += 1
+            finally:
+                await incoming.put({"type": "websocket.disconnect", "code": 1000})
+                try:
+                    await asyncio.wait_for(socket, 5)
+                finally:
+                    if not socket.done():
+                        socket.cancel()
+                        await asyncio.gather(socket, return_exceptions=True)
+            await check("PATCH", "/work-items/garden", 409, token=first, revision="1", data={"title": "Stale"})
+            identities.pop(first)
+            await check("GET", "/work-items/garden", 401, token=first)
+        elif name == "reload":
+            result = await check("GET", "/work-items/garden", 200, token=first)
+            require(result[1].get(b"etag") == b'"2"' and json.loads(result[2])["done"] is True)
+            await check("DELETE", "/work-items/garden", 404, token=second, revision="9")
+            await check("DELETE", "/work-items/garden", 409, token=first, revision="1")
+            await check("DELETE", "/work-items/garden", 204, token=first, revision="2")
+        else:
+            raise ValueError("Unknown acceptance phase.")
+    await app.aclose()
+    require({thread.ident for thread in threading.enumerate()} == threads)
     return {"phase": name, "checks": checks, "closed": True}
 '''
