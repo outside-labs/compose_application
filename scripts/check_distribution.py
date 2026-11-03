@@ -47,8 +47,8 @@ assert all("extra ==" in item for item in metadata.requires("compose-application
 location = pathlib.Path(compose_application.__file__).resolve()
 assert location.is_relative_to(pathlib.Path(sys.prefix).resolve())
 assert location.with_name("py.typed").is_file()
-assert not any(name in sys.modules for name in ("backpack_store", "enforce_type", "expose_api", "spatial_ui"))
-assert all(__import__("importlib.util").util.find_spec(name) is None for name in ("backpack_store", "enforce_type", "expose_api", "spatial_ui"))
+assert not any(name in sys.modules for name in ("backpack_store", "enforce_type", "expose_api", "spatial_ui", "headless_spreadsheets"))
+assert all(__import__("importlib.util").util.find_spec(name) is None for name in ("backpack_store", "enforce_type", "expose_api", "spatial_ui", "headless_spreadsheets"))
 digest = hashlib.sha256()
 for path in sorted(location.parent.rglob("*")):
     if path.is_file() and (path.suffix == ".py" or path.name == "py.typed"):
@@ -133,29 +133,104 @@ def qualify_live(python, work):
     return receipt
 
 
-def qualify_tabular(python, work):
-    expected = json.loads((ROOT / "docs/tabular-sources-v1.json").read_text())["packages"]
+def tabular_provenance(python, work, expected, *, editing=True):
     probe = '''
-import importlib.metadata as m, json
+import hashlib, importlib, importlib.metadata as m, json, pathlib, sys
 result = {}
 for name in ("expose-api", "spatial-ui", "backpack-store", "enforce-type", "headless-spreadsheets"):
     package = m.distribution(name)
     direct = json.loads(package.read_text("direct_url.json") or "{}")
     result[name] = {"version": package.version, "revision": direct.get("vcs_info", {}).get("commit_id")}
-print(json.dumps(result))
+modules = {}
+for module, source in (("expose_api", "tabular.py"), ("spatial_ui", "table_binding.py"),
+                       ("spatial_ui", "static/runtime.js"), ("headless_spreadsheets", "sources.py")):
+    root = pathlib.Path(importlib.import_module(module).__file__).parent
+    assert root.is_relative_to(pathlib.Path(sys.prefix))
+    modules[module + "/" + source] = hashlib.sha256(root.joinpath(source).read_bytes()).hexdigest()
+if sys.argv[1] == "editing":
+    from headless_spreadsheets.backpack import BackpackSource
+    root = pathlib.Path(importlib.import_module("headless_spreadsheets").__file__).parent
+    modules["headless_spreadsheets/backpack.py"] = hashlib.sha256(root.joinpath("backpack.py").read_bytes()).hexdigest()
+composition = m.distribution("compose-application")
+direct = json.loads(composition.read_text("direct_url.json") or "{}")
+print(json.dumps({"packages": result, "module_sha256": modules,
+    "composition": {"version":composition.version,"revision":direct.get("vcs_info",{}).get("commit_id")}}))
 '''
-    packages = json.loads(run(python, "-I", "-c", probe, cwd=work, capture=True))
-    if packages != expected:
+    receipt = json.loads(run(python, "-I", "-c", probe, "editing" if editing else "read-only", cwd=work, capture=True))
+    if receipt["packages"] != expected:
         raise RuntimeError("Installed tabular sources differ from the qualified profile.")
-    checks = '''
-import sys,unittest
-suite = unittest.defaultTestLoader.discover(sys.argv[1], pattern="test_tabular_reference.py")
-result = unittest.TextTestRunner(verbosity=2).run(suite)
-assert result.wasSuccessful() and not result.skipped and result.testsRun == 4
+    run("uv", "pip", "check", "--python", python, cwd=work)
+    return receipt
+
+
+def tabular_state(python, work, database):
+    probe = '''
+import asyncio, hashlib, json, sys
+from dataclasses import asdict
+from compose_application.tabular import tabular_application
+async def main():
+    async with tabular_application(sys.argv[1], seed=False) as service:
+        values = await service.store.list(limit=1000)
+        rows = [await service.store.get_row(value.key) for value in values]
+        retained = [[r.key, r.revision, asdict(r.value)] for r in rows if r.key not in {"item-055", "item-056", "item-057"}]
+        print(json.dumps({"rows": len(rows), "retained_rows": len(retained),
+            "sha256": hashlib.sha256(json.dumps(retained,sort_keys=True).encode()).hexdigest(),
+            "prior_writer_revision": next(r.revision for r in rows if r.key == "item-095")}))
+asyncio.run(main())
 '''
-    run(python, "-I", "-W", "error::ResourceWarning", "-c", checks, work / "tests", cwd=work)
-    return {"profile": "cpython-tabular/1", "packages": packages, "reference_tests": 4,
-            "http_checks": 18, "process_restart": True}
+    return json.loads(run(python, "-I", "-c", probe, database, cwd=work, capture=True))
+
+
+def qualify_tabular_upgrade(minimum_python, python, work, kind, minimum):
+    database = work / (kind + "-tabular-upgrade.sqlite")
+    seed = "import asyncio,json,sys; from compose_application.tabular import accept_phase; print(json.dumps(asyncio.run(accept_phase(sys.argv[1],'seed'))))"
+    previous = json.loads(run(minimum_python, "-I", "-c", seed, database, cwd=work, capture=True))
+    previous.pop("continuation")
+    before = tabular_state(minimum_python, work, database)
+    phases = []
+    edit = "import asyncio,json,sys; from compose_application.tabular_edits import edit_phase; print(json.dumps(asyncio.run(edit_phase(sys.argv[1],sys.argv[2]))))"
+    for phase in ("write", "reopen"):
+        phases.append(json.loads(run(python, "-I", "-c", edit, database, phase, cwd=work, capture=True)))
+    after = tabular_state(python, work, database)
+    if before != after or before["rows"] != 120 or before["retained_rows"] != 117 or before["prior_writer_revision"] != "2":
+        raise RuntimeError("Code/dependency upgrade changed unrelated durable rows or revisions.")
+    if not previous["passed"] or any(not r["passed"] or not r["closed"] for r in phases):
+        raise RuntimeError("Tabular upgrade did not provide complete process/close evidence.")
+    return {"from_revision": minimum["composition_revision"], "minimum": previous, "current": phases,
+            "retained": after, "process_restart": True, "passed": True}
+
+
+def qualify_tabular(python, work, *, browser=False):
+    expected = json.loads((ROOT / "docs/tabular-sources-v1.json").read_text())["packages"]
+    receipt = tabular_provenance(python, work, expected)
+    checks = '''
+import json,sys,unittest
+from pathlib import Path
+# Only copied test support/fixtures live here; implementation imports stay installed.
+sys.path.insert(0, str(Path(sys.argv[1]).parent))
+suite = unittest.defaultTestLoader.discover(sys.argv[1], pattern="test_tabular*.py")
+result = unittest.TextTestRunner(verbosity=2).run(suite)
+assert result.wasSuccessful() and not result.skipped and result.testsRun == 9
+print(json.dumps({"tests":result.testsRun,"skipped":len(result.skipped),"passed":True}))
+'''
+    receipt["reference"] = json.loads(run(python, "-I", "-W", "error::ResourceWarning", "-c", checks, work / "tests", cwd=work, capture=True))
+    receipt.update(profile="cpython-tabular/1", reference_tests=9, read_only_http_checks=18, editable_http_checks=27,
+                   headless_checks=7, process_restart=True, independent_consumers=True)
+    if browser:
+        requirement, = tomllib.loads((ROOT / "pyproject.toml").read_text())["dependency-groups"]["browser-tests"]
+        run("uv", "pip", "install", "--python", python, requirement, cwd=work)
+        browser_checks = '''
+import sys,unittest
+suite = unittest.defaultTestLoader.discover(sys.argv[1], pattern="browser_tabular*.py")
+result = unittest.TextTestRunner(verbosity=2).run(suite)
+assert result.wasSuccessful() and not result.skipped and result.testsRun == 2
+'''
+        run(python, "-I", "-W", "error::ResourceWarning", "-c", browser_checks, work / "tests", cwd=work)
+        receipt["browser"] = {name: json.loads((work / filename).read_text()) for name, filename in (
+            ("read_only", "tabular-browser-receipt.json"), ("editable", "tabular-edit-browser-receipt.json"))}
+        if any(value.get("passed") is not True for value in receipt["browser"].values()):
+            raise RuntimeError("Installed Chromium qualification did not pass.")
+    return receipt
 
 
 def qualify_validation(python, work, expected):
@@ -284,9 +359,15 @@ def main():
     parser.add_argument("--live", action="store_true", help="qualify protected native/process live checks in both artifacts")
     parser.add_argument("--projects", action="store_true", help="install and check generated service/ui/live projects from both artifacts")
     parser.add_argument("--validation", action="store_true", help="qualify the separate compiled validation service profile in both artifacts")
-    parser.add_argument("--tabular", action="store_true", help="qualify the separate persisted read-only table profile in both artifacts")
+    parser.add_argument("--tabular", action="store_true", help="qualify read-only/editable/headless table profiles and retained-data upgrades")
+    parser.add_argument("--tabular-browser", action="store_true", help="run actual Chromium from each isolated tabular artifact installation")
     parser.add_argument("--report", type=Path, help="write a machine-readable receipt, including failure phase")
     args = parser.parse_args()
+    if args.tabular_browser and not args.tabular:
+        parser.error("--tabular-browser requires --tabular")
+    if args.tabular and (sys.implementation.name != "cpython" or sys.version_info[:2] != (3, 14)
+                        or platform.system() not in ("Linux", "Darwin", "Windows")):
+        parser.error("The tabular profile qualifies CPython 3.14 on Linux, macOS and Windows.")
     project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
     if project["dependencies"]:
         raise RuntimeError("The initial package foundation declares no runtime dependencies.")
@@ -311,6 +392,22 @@ def main():
             if len(wheels) != 1 or len(sources) != 1:
                 raise RuntimeError("Expected one wheel and one source distribution.")
             shutil.copytree(ROOT / "tests", work / "tests", ignore=shutil.ignore_patterns("__pycache__"))
+            tabular_minimum_python = None
+            if args.tabular:
+                (work / "scripts").mkdir()
+                for name in ("check_contracts.py", "check_tabular.py"):
+                    shutil.copy2(ROOT / "scripts" / name, work / "scripts" / name)
+                (work / "docs" / "contracts").mkdir(parents=True)
+                shutil.copy2(ROOT / "docs/contracts/tabular-v1.json", work / "docs/contracts/tabular-v1.json")
+                tabular_manifest = json.loads((ROOT / "docs/tabular-compatibility-v1.json").read_text())
+                minimum = tabular_manifest["minimum"]
+                stage("tabular-minimum/install")
+                tabular_minimum_python = environment(work / "tabular-minimum")
+                source = "compose-application[tabular] @ git+https://github.com/outside-labs/compose_application.git@" + minimum["composition_revision"]
+                run("uv", "pip", "install", "--python", tabular_minimum_python, source, cwd=work)
+                report["tabular_minimum"] = tabular_provenance(tabular_minimum_python, work, minimum["packages"], editing=False)
+                if report["tabular_minimum"]["composition"] != {"version": minimum["composition_version"], "revision": minimum["composition_revision"]}:
+                    raise RuntimeError("The tabular minimum differs from its immutable composition source.")
             if args.matrix:
                 minimum = manifest["minimum"]
                 minimum_python = environment(work / "minimum")
@@ -364,7 +461,9 @@ def main():
                     tabular_python = environment(work / (kind + "-tabular"))
                     run("uv", "pip", "install", "--python", tabular_python, str(artifact) + "[tabular]", cwd=work)
                     stage(kind + "/tabular-reference")
-                    receipt["tabular"] = qualify_tabular(tabular_python, work)
+                    receipt["tabular"] = qualify_tabular(tabular_python, work, browser=args.tabular_browser)
+                    stage(kind + "/tabular-retained-upgrade")
+                    receipt["tabular"]["upgrade"] = qualify_tabular_upgrade(tabular_minimum_python, tabular_python, work, kind, minimum=tabular_manifest["minimum"])
                 print(f"Installed {kind} passed: {artifact.name}", flush=True)
         report["passed"], report["phase"] = True, "complete"
     except Exception as error:

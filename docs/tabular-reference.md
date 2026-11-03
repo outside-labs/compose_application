@@ -54,12 +54,13 @@ hidden-field refusal, principal cursor isolation, changed queries, no view
 mutations, a trusted concurrent writer, continuation after restart and drained
 workers. The concurrent writer is an acceptance fixture, not a browser edit path.
 
-Four focused reference tests additionally qualify the actual public Headless
-Spreadsheets snapshot/client boundary, formula metadata preservation, source
-ownership, profile isolation and idempotent seeding. Each wheel/source artifact
-is installed into a separate tabular environment; dependency receipts verify
-the immutable source commits before running the checks. Existing profiles retain
-their original pins and qualification.
+Nine focused contract/reference tests qualify editing, cancellation, the public
+Headless Spreadsheets snapshot/client boundary, formula metadata preservation,
+source ownership, profile isolation and idempotent seeding. Each wheel/source
+artifact is installed into a separate tabular environment; dependency receipts
+verify immutable source commits before running the checks. The
+[installed qualification](tabular-qualification.md) adds retained-data upgrades
+and Chromium from each installed artifact. Existing profiles retain their pins.
 
 The separate Chromium check uses actual HTTP and SQLite with phone/desktop
 widths, reduced motion, independent browser contexts, header sorting, dataset
