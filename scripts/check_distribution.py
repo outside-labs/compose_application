@@ -17,8 +17,11 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def run(*arguments, cwd, capture=False):
-    result = subprocess.run([str(value) for value in arguments], cwd=cwd, check=True,
+    result = subprocess.run([str(value) for value in arguments], cwd=cwd,
                             capture_output=capture, text=capture)
+    if result.returncode and capture and result.stderr:
+        print(result.stderr[-12000:], file=sys.stderr)
+    result.check_returncode()
     return result.stdout if capture else None
 
 
