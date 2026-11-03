@@ -1,7 +1,10 @@
 # Shared contract register
 
-This register distinguishes adopted direction from contracts requiring executable
-examples and owner review. The implementation queue is in [the Project](https://github.com/orgs/outside-labs/projects/18).
+The [version 1 application contracts](application-contracts-v1.md) adopt the
+shared profiles, identities, revision/error representation and recovery rules.
+Their [finite fixtures](contracts/v1.json) are executable contract examples.
+The register below names the remaining owner-specific implementation contracts.
+The implementation queue is in [the Project](https://github.com/orgs/outside-labs/projects/18).
 
 | Boundary | Adopted direction | Contract work before implementation |
 | --- | --- | --- |

@@ -33,6 +33,8 @@ adapter and an extraction inventory of Pretty Notebook's storage behavior.
 
 ```sh
 uv sync --locked
+uv run --locked python scripts/check_contracts.py
+uv run --locked python -m unittest discover -s tests
 uv run --locked python scripts/check_distribution.py
 ```
 
