@@ -11,7 +11,7 @@ import sys
 from tempfile import TemporaryDirectory
 
 
-REFERENCE_REVISION = "64fdd88efec0238fa5a224d490cabd5e6a49c766"
+REFERENCE_REVISION = "8977963049023c7fe72bb8a2c9089633df049c3d"
 PROFILES = ("service", "ui", "live")
 _RESERVED = set(sys.stdlib_module_names) | {
     "compose_application", "expose_api", "backpack_store", "enforce_type", "spatial_ui",

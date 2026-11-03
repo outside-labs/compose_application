@@ -70,7 +70,7 @@ preserved drafts, phone/desktop widths, reduced motion and graceful restart.
 Those finite browser receipts do not qualify Track B browser-local execution.
 
 The `live` extra selects API `5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1` and UI
-`dccfb4c465051fee87254687ac4b59a09f61369f`. The existing service/UI entry points
+`9e473497febdc505e54ba25536b65b68722d264b`. The existing service/UI entry points
 consume these current compatible sources; the immutable minimum service and
 prior REST/UI receipts remain recorded separately in the register. Installing
 the base package still imports none of the integration packages.
@@ -81,13 +81,21 @@ subscribers, application-process reopen, retention/resync, concealed checked
 denials and complete shutdown. Linux Chromium retains a separate protected-live
 browser receipt for editing, principal isolation and same-origin restart.
 
+The current UI/live source includes the numeric-loopback startup repair from
+[HOST-05](https://github.com/outside-labs/spatial_ui/pull/52). Preview binding
+uses the selected numeric address without reverse DNS. Each current installed
+UI artifact also verifies startup with DNS lookups refused. The prior LIVE-02
+source combination remains recorded under `previous_live` and in its immutable
+composition source. API/storage/validation sources and the minimum profile
+retain their existing pins; no distribution version changes.
+
 ## Generated reference projects
 
 `--projects` uses the installed current wheel and source generator to create
 each explicit `service`, `ui` and `live` project in a separate directory outside
 the checkout. It installs all six emitted projects normally into independent
 environments, resolving their declared immutable reference source
-`64fdd88efec0238fa5a224d490cabd5e6a49c766` and its qualified dependency pins.
+`8977963049023c7fe72bb8a2c9089633df049c3d` and its qualified dependency pins.
 No candidate dependency override, editable source or `--no-deps` shortcut is
 used for the generated applications. Service installation has no UI package.
 
