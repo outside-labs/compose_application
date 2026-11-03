@@ -38,7 +38,7 @@
       "enforce-type": {"version": "0.1.0", "revision": null}
     },
     "hosting": "caller-owned ASGI HTTP/WebSocket host, one UI process/event loop, same-origin cookie verification",
-    "acceptance": "protected native policy/session/lifecycle checks; cross-worker browser acceptance has a separate receipt"
+    "acceptance": "9 required native/process checks per installed artifact on Linux/macOS/Windows; cross-worker Chromium and same-origin restart have a separate receipt"
   },
   "previous_rest_ui": {
     "composition_revision": "98ec150f8bebec11013d750403ce529050042e2c",

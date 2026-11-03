@@ -120,17 +120,29 @@ print(json.dumps({"spatial-ui": {"version": distribution.version, "revision": di
     return {"packages": packages, "reference": reference}
 
 
+def qualify_live(python, work):
+    path = work / "live-receipt.json"
+    run(python, "-I", "-W", "error::ResourceWarning", ROOT / "scripts/check_live_profile.py",
+        "--tests", work / "tests", "--expected", ROOT / "docs/compatibility-v1.json",
+        "--isolated", "--receipt", path, cwd=work)
+    receipt = json.loads(path.read_text(encoding="utf-8"))
+    if not receipt["passed"] or receipt["skipped"] or receipt["tests"] < 9:
+        raise RuntimeError("Installed live acceptance did not provide complete native/process evidence.")
+    return receipt
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--service", action="store_true", help="qualify the optional service profile in both installed artifacts")
     parser.add_argument("--matrix", action="store_true", help="qualify the finite minimum/current matrix and code upgrades")
     parser.add_argument("--ui", action="store_true", help="qualify the optional typed UI in both installed artifacts")
+    parser.add_argument("--live", action="store_true", help="qualify protected native/process live checks in both artifacts")
     parser.add_argument("--report", type=Path, help="write a machine-readable receipt, including failure phase")
     args = parser.parse_args()
     project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
     if project["dependencies"]:
         raise RuntimeError("The initial package foundation declares no runtime dependencies.")
-    manifest = json.loads((ROOT / "docs/compatibility-v1.json").read_text()) if args.matrix or args.ui else None
+    manifest = json.loads((ROOT / "docs/compatibility-v1.json").read_text()) if args.matrix or args.ui or args.live else None
     if args.matrix and (sys.implementation.name != "cpython" or sys.version_info[:2] != (3, 14)
                         or platform.system() not in manifest["operating_systems"]):
         parser.error("This finite matrix qualifies CPython 3.14 on Linux, macOS and Windows.")
@@ -181,6 +193,11 @@ def main():
                     run("uv", "pip", "install", "--python", python, str(artifact) + "[ui]", cwd=work)
                     stage(kind + "/ui-reference")
                     receipt["ui"] = qualify_ui(python, work, manifest["ui"])
+                if args.live:
+                    stage(kind + "/live-install")
+                    run("uv", "pip", "install", "--python", python, str(artifact) + "[live]", cwd=work)
+                    stage(kind + "/live-native-process")
+                    receipt["live"] = qualify_live(python, work)
                 if minimum_python is not None:
                     stage(kind + "/minimum-to-current-upgrade")
                     database = work / ("upgrade-" + kind + ".sqlite3")
