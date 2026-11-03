@@ -78,3 +78,16 @@ cross-process delivery and reconnect evidence; generation chooses that reference
 
 Implementation and acceptance: [CA-09](https://github.com/outside-labs/compose_application/issues/9),
 [STYLE-01–06](https://github.com/outside-labs/compose_application/issues/22).
+
+## Installed acceptance
+
+`scripts/check_distribution.py --projects --report /tmp/projects.json` builds
+wheel and source artifacts, uses each isolated installed generator and normally
+installs all three emitted profiles into separate environments. It verifies
+immutable dependency provenance and exact installed application source hashes,
+then runs the installed console scripts. Each uses two independent processes
+for temporary data: nine service, 15 UI and 15 live checks per artifact.
+Receipts also verify import isolation and unchanged bytes/modification times
+after source edits, a data fixture and the same generation request. The normal
+cross-platform compatibility job retains these results alongside existing
+service/UI/live acceptance. The base package still installs independently.

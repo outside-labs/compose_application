@@ -128,7 +128,9 @@ async def request(port, method, path, *, data=None, revision=None):
 SERVICE_PHASE = '''
 
 async def phase(database, name):
+    import threading
     from .app import open_server
+    threads = {thread.ident for thread in threading.enumerate()}
     async with open_server(database) as server:
         port = server.sockets[0].getsockname()[1]
         checks = 0
@@ -154,6 +156,7 @@ async def phase(database, name):
             await check("GET", "/work-items/garden", 404)
         else:
             raise ValueError("Unknown acceptance phase.")
+    require({thread.ident for thread in threading.enumerate()} == threads)
     return {"phase": name, "checks": checks, "closed": True}
 '''
 
@@ -195,9 +198,11 @@ async def serve(database, *, port=8000):
 UI_PHASE = '''
 
 async def phase(database, name):
+    import threading
     from spatial_ui import Session
     from spatial_ui.resource_form import ResourceForm
     from .app import open_server
+    threads = {thread.ident for thread in threading.enumerate()}
     checks = 0
     def check(value):
         nonlocal checks
@@ -230,6 +235,11 @@ async def phase(database, name):
             check(await asyncio.to_thread(client.list) == ())
         else:
             raise ValueError("Unknown acceptance phase.")
+    # The public form client uses asyncio's default executor; its caller owns
+    # that executor until asyncio.run exits. Native UI/storage workers must close.
+    remaining = {thread.ident for thread in threading.enumerate()
+                 if not thread.name.startswith("asyncio")}
+    require(remaining <= threads)
     return {"phase": name, "checks": checks, "closed": True}
 '''
 

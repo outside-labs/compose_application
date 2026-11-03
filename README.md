@@ -77,3 +77,21 @@ same-origin cookie verification, per-principal native UI sessions and persistent
 single-record WebSocket snapshots. Install with `uv sync --locked --extra live`.
 The caller supplies existing credentials and a WebSocket-capable ASGI host;
 publication and public hosting remain separate.
+
+## Reference projects
+
+Create a small application-owned reference with an explicit profile:
+
+```sh
+python -m compose_application.projects ./garden-board --name garden-board --profile ui
+cd garden-board
+uv sync
+uv run garden-board check
+uv run garden-board serve --database ./work-items.sqlite3
+```
+
+Select `service` for checked REST, `ui` for the loopback typed workspace, or
+`live` for a protected native ASGI factory with caller-supplied credentials,
+origin and host. Each project pins the accepted immutable composition source.
+Generation installs nothing. Matching repeat requests leave owner edits and
+data untouched. See the [layout, setup and acceptance](docs/reference-projects.md).

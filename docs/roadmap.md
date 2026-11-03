@@ -59,6 +59,17 @@ take the relational contract after the shared contract prerequisite is accepted.
 
 ## Runtime gates and later choices
 
+CA-09's accepted-reference layout is implemented by focused project-generation
+tasks: [STYLE-01](https://github.com/outside-labs/compose_application/issues/22),
+[STYLE-02](https://github.com/outside-labs/compose_application/issues/23),
+[STYLE-03](https://github.com/outside-labs/compose_application/issues/24),
+[STYLE-04](https://github.com/outside-labs/compose_application/issues/25),
+[STYLE-05](https://github.com/outside-labs/compose_application/issues/26) and
+[STYLE-06](https://github.com/outside-labs/compose_application/issues/27).
+The [reference project layout](reference-projects.md) compares the accepted
+service/UI/live workflows and records their explicit selection, ownership,
+repeat-request behavior and installed acceptance.
+
 The REST binding is implemented through focused children of SUI-API-01:
 [SUI-INPUT-02](https://github.com/outside-labs/spatial_ui/issues/25),
 [SUI-FORM-01](https://github.com/outside-labs/spatial_ui/issues/26),

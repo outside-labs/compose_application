@@ -23,7 +23,7 @@ Run the same installed-package matrix used by CI:
 
 ```bash
 uv run --locked python scripts/check_distribution.py \
-  --matrix --ui --live --report /tmp/composition-compatibility.json
+  --matrix --ui --live --projects --report /tmp/composition-compatibility.json
 ```
 
 The checker builds the current wheel and source distribution, verifies their
@@ -80,3 +80,28 @@ checks without skips, including writes from a different OS process, independent
 subscribers, application-process reopen, retention/resync, concealed checked
 denials and complete shutdown. Linux Chromium retains a separate protected-live
 browser receipt for editing, principal isolation and same-origin restart.
+
+## Generated reference projects
+
+`--projects` uses the installed current wheel and source generator to create
+each explicit `service`, `ui` and `live` project in a separate directory outside
+the checkout. It installs all six emitted projects normally into independent
+environments, resolving their declared immutable reference source
+`64fdd88efec0238fa5a224d490cabd5e6a49c766` and its qualified dependency pins.
+No candidate dependency override, editable source or `--no-deps` shortcut is
+used for the generated applications. Service installation has no UI package.
+
+Each installed console command performs two independent temporary-database
+process phases. Service verifies nine HTTP/checked-revision/reopen cases; UI
+verifies 15 page/form/conflict/reopen cases; live verifies 15 protected HTTP,
+native snapshot, revocation and reopen cases. All phases drain owned workers;
+the live factory uses in-memory disposable credentials and no listener. The
+broader native/browser acceptance remains in the corresponding reference
+profiles. Checks never consume an owner database or identity configuration.
+
+Receipts retain exact generated source hashes, installed dependency revisions,
+base import isolation, command results and read-only repeat acceptance after
+source edits and a preexisting synthetic data file. Linux, macOS and Windows
+run the same installed checks. These prove finite reference-project creation
+and operation; arbitrary domains/schema migrations and production host selection
+remain application work. See [project setup](reference-projects.md).

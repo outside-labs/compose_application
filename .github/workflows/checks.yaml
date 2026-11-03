@@ -33,7 +33,7 @@ jobs:
       - run: uv run --locked python scripts/check_contracts.py
       - run: uv run --locked python -m unittest discover -s tests
       - run: uv run --locked python scripts/probe_track_b.py
-      - run: uv run --locked python scripts/check_distribution.py --matrix --ui --live --report compatibility.json
+      - run: uv run --locked python scripts/check_distribution.py --matrix --ui --live --projects --report compatibility.json
       - name: Retain exact compatibility receipt
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
