@@ -114,6 +114,8 @@ print(json.dumps({"spatial-ui": {"version": distribution.version, "revision": di
     packages = json.loads(run(python, "-I", "-c", probe, cwd=work, capture=True))
     if packages != expected["packages"]:
         raise RuntimeError("Installed UI packages do not match their qualified source profile.")
+    run(python, "-I", "-W", "error::ResourceWarning", "-m", "unittest", "discover",
+        "-s", work / "tests", "-p", "test_ui.py", "-k", "loopback_preview_startup", "-v", cwd=work)
     reference = json.loads(run(python, "-I", "-m", "compose_application.ui", "check", cwd=work, capture=True))
     if reference["checks"] != 15 or reference["process_restart"] is not True:
         raise RuntimeError("UI acceptance did not provide the complete restart receipt.")

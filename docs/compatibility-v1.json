@@ -24,7 +24,7 @@
   "ui": {
     "profile": "cpython-ui/1",
     "packages": {
-      "spatial-ui": {"version": "0.1.0", "revision": "dccfb4c465051fee87254687ac4b59a09f61369f"}
+      "spatial-ui": {"version": "0.1.0", "revision": "9e473497febdc505e54ba25536b65b68722d264b"}
     },
     "browser": "Chromium on Linux; separate actual browser receipt",
     "hosting": "loopback preview, synchronous callbacks, one process"
@@ -33,12 +33,17 @@
     "profile": "cpython-live/1",
     "packages": {
       "expose-api": {"version": "0.1.0", "revision": "5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1"},
-      "spatial-ui": {"version": "0.1.0", "revision": "dccfb4c465051fee87254687ac4b59a09f61369f"},
+      "spatial-ui": {"version": "0.1.0", "revision": "9e473497febdc505e54ba25536b65b68722d264b"},
       "backpack-store": {"version": "0.1.0", "revision": "54f5a1e883fcc32f8d87cc553dc83dae0434300d"},
       "enforce-type": {"version": "0.1.0", "revision": null}
     },
     "hosting": "caller-owned ASGI HTTP/WebSocket host, one UI process/event loop, same-origin cookie verification",
     "acceptance": "9 required native/process checks per installed artifact on Linux/macOS/Windows; cross-worker Chromium and same-origin restart have a separate receipt"
+  },
+  "previous_live": {
+    "composition_revision": "64fdd88efec0238fa5a224d490cabd5e6a49c766",
+    "api_revision": "5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1",
+    "ui_revision": "dccfb4c465051fee87254687ac4b59a09f61369f"
   },
   "previous_rest_ui": {
     "composition_revision": "98ec150f8bebec11013d750403ce529050042e2c",
