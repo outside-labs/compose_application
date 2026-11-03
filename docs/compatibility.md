@@ -23,7 +23,7 @@ Run the same installed-package matrix used by CI:
 
 ```bash
 uv run --locked python scripts/check_distribution.py \
-  --matrix --ui --report /tmp/composition-compatibility.json
+  --matrix --ui --live --report /tmp/composition-compatibility.json
 ```
 
 The checker builds the current wheel and source distribution, verifies their
@@ -74,3 +74,9 @@ The `live` extra selects API `5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1` and UI
 consume these current compatible sources; the immutable minimum service and
 prior REST/UI receipts remain recorded separately in the register. Installing
 the base package still imports none of the integration packages.
+
+Each installed `live` profile additionally runs nine required native/process
+checks without skips, including writes from a different OS process, independent
+subscribers, application-process reopen, retention/resync, concealed checked
+denials and complete shutdown. Linux Chromium retains a separate protected-live
+browser receipt for editing, principal isolation and same-origin restart.

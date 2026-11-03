@@ -110,3 +110,31 @@ shutdown; callbacks still require their own finite I/O bounds.
 The exact immutable source revisions and acceptance evidence are recorded in
 `compatibility-v1.json`. Releases, package uploads, production ASGI host/proxy
 selection and actual public deployment remain separate decisions.
+
+## Acceptance
+
+```sh
+uv sync --locked --extra live --group browser-tests
+uv run --frozen python -W error::ResourceWarning scripts/check_live_profile.py
+uv run --frozen python -m playwright install chromium
+uv run --frozen python -W error::ResourceWarning -m unittest discover -s tests -p browser_live_reference.py -v
+```
+
+The nine required native/process checks cover access/revision precedence,
+projection, independent principal sessions, failed startup/canceled close,
+revocation, other-process writes, independent subscribers, fresh application
+processes and expired-cursor resync. Isolated wheel/source live installations
+run those same checks without skips on Linux, macOS and Windows; receipts record
+exact dependency revisions and artifact/module hashes. The immutable minimum
+and current service/UI compatibility and upgrade checks continue separately.
+
+Actual Chromium uses the bounded test-only wire host, with no production host
+selection. At phone/desktop widths it verifies two editing contexts, a different
+principal, keyboard/checkbox input, field validation, cross-process updates while
+typing, preserved focus/selection and explicit conflict/merge/discard. Recovery
+acceptance holds reconnect admission while a different OS process expires the
+cursor, then verifies a fresh snapshot and refusal of an old callback. Stop
+retires socket handlers/timers; reload and a graceful same-origin service restart
+produce fresh UI sessions and refuse the prior request token. Revocation clears
+the remote projection. Shutdown receipts assert zero sockets, HTTP requests and
+UI sessions, closed native workers and closed storage ownership.

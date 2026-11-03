@@ -33,7 +33,7 @@ jobs:
       - run: uv run --locked python scripts/check_contracts.py
       - run: uv run --locked python -m unittest discover -s tests
       - run: uv run --locked python scripts/probe_track_b.py
-      - run: uv run --locked python scripts/check_distribution.py --matrix --ui --report compatibility.json
+      - run: uv run --locked python scripts/check_distribution.py --matrix --ui --live --report compatibility.json
       - name: Retain exact compatibility receipt
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -81,6 +81,27 @@ jobs:
         with:
           name: ui-browser-receipt
           path: ui-browser-receipt.json
+          if-no-files-found: error
+
+  live-browser:
+    name: Protected live reference / Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c97f06e356bcca1b426f396ef93ec35ce149ce7b
+        with:
+          version: '0.13.6'
+          python-version: '3.14'
+      - run: uv sync --locked --extra live --group browser-tests
+      - run: uv run --frozen python -m playwright install --with-deps chromium
+      - run: uv run --frozen python -W error::ResourceWarning -m unittest discover -s tests -p browser_live_reference.py -v
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: live-reference-browser
+          path: live-reference-browser-receipt.json
           if-no-files-found: error
 
   track-b-probes:

@@ -35,7 +35,7 @@ def main():
     result = unittest.TextTestRunner(verbosity=2).run(suite)
     package = Path(compose_application.__file__).parent
     receipt = {"profile": "cpython-live/1", "python": platform.python_version(), "os": platform.system(),
-        "passed": result.wasSuccessful() and not result.skipped and result.testsRun >= 7,
+        "passed": result.wasSuccessful() and not result.skipped and result.testsRun >= 9,
         "tests": result.testsRun, "skipped": len(result.skipped), "failures": len(result.failures), "errors": len(result.errors),
         "packages": packages, "modules_sha256": {name: hashlib.sha256((package / name).read_bytes()).hexdigest()
             for name in ("live.py", "ui.py", "reference.py")}}
