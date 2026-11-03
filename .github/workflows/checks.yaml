@@ -32,4 +32,29 @@ jobs:
       - run: uv sync --locked
       - run: uv run --locked python scripts/check_contracts.py
       - run: uv run --locked python -m unittest discover -s tests
+      - run: uv run --locked python scripts/probe_track_b.py
       - run: uv run --locked python scripts/check_distribution.py
+
+  track-b-probes:
+    name: Track B prerequisite probes (Node 24)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c97f06e356bcca1b426f396ef93ec35ce149ce7b
+        with:
+          version: '0.13.6'
+          python-version: '3.14'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          repository: outside-labs/pocket-python
+          ref: 5072ae1b11c24bae219a73c35caa30c5406194d4
+          path: .dependencies/pocket-python
+          persist-credentials: false
+      - run: uv sync --locked
+      - run: uv run --locked python scripts/probe_track_b.py --runtime .dependencies/pocket-python

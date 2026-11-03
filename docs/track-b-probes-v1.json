@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "workload": "work-items/1",
+  "source_kind": "original",
+  "workload_sha256": "045ac7758673c220332b9387606cb20ef5fb6b1daf532d3257ee3966603dad40",
+  "cpython": "3.14.7",
+  "os": "darwin",
+  "machine": "arm64",
+  "probes": [
+    {
+      "id": "domain-values",
+      "source_sha256": "359e3d1f837a90bdd21c9ecbd5e45ab6d49a0e1934a2bb45f93f63e297abedcf",
+      "cpython_stdout": "item-001 True\n"
+    },
+    {
+      "id": "t-string-view",
+      "source_sha256": "cb2b806f65600710b65da0968b24f5ec9ba4a09c7c46c1769fabfbffb4778cbb",
+      "cpython_stdout": "('', '') Garden\n"
+    },
+    {
+      "id": "dataclass-fields",
+      "source_sha256": "8df7d59dc74ad203288cd301c071f788d6e72286474c8badbcf58e73f44ac36a",
+      "cpython_stdout": "title Garden\n"
+    },
+    {
+      "id": "typing-reflection",
+      "source_sha256": "2b2bf5e000663cbc64a454813050b74bdb24b58841d3082f77fbdb955635cdf2",
+      "cpython_stdout": "True\n"
+    },
+    {
+      "id": "json-round-trip",
+      "source_sha256": "e416e3d55eeb35e64db087264d4a39b60d2484a327fc0992b21ff7866ac0cd5f",
+      "cpython_stdout": "True\n"
+    },
+    {
+      "id": "native-await",
+      "source_sha256": "3a28aba616499becd047be90af7e4238f271ebd7c8d15b9e05fdaac13657262c",
+      "cpython_stdout": "coroutine-defined\n"
+    },
+    {
+      "id": "original-workload",
+      "source_sha256": "ccdd4493fe5daf5702a27b2fa24bf9c6be310058cac4b5b3b3eb185ab287db6b",
+      "cpython_stdout": "{\"key\":\"item-001\",\"revision\":\"1\",\"schema_version\":1,\"value\":{\"done\":false,\"title\":\"Garden\"}}\n"
+    }
+  ],
+  "browser_acceptance": "not-run",
+  "reduced_source": "not-qualified",
+  "engine": {
+    "node": "v24.19.0",
+    "language_profile": "classes-source/1",
+    "results": [
+      {
+        "id": "domain-values",
+        "status": "supported",
+        "stdout": "item-001 True\n",
+        "error": null,
+        "closed": {
+          "state": "closed",
+          "bytes": 0,
+          "peakBytes": 6963,
+          "objects": 0,
+          "roots": 0,
+          "frames": 0,
+          "external": 0,
+          "allocations": 24,
+          "reclaimed": 24,
+          "collections": 71
+        }
+      },
+      {
+        "id": "t-string-view",
+        "status": "refused",
+        "stdout": "",
+        "error": {
+          "code": "UNSUPPORTED",
+          "type": "UnsupportedSyntaxError",
+          "phase": "tokenize",
+          "message": "Formatted and template strings are outside this source profile.",
+          "location": {
+            "filename": "sources/app.py",
+            "span": [
+              2,
+              6,
+              2,
+              7
+            ]
+          },
+          "traceback": [],
+          "context": null,
+          "cause": null,
+          "suppressContext": false
+        },
+        "closed": null
+      },
+      {
+        "id": "dataclass-fields",
+        "status": "refused",
+        "stdout": "",
+        "error": {
+          "code": "UNSUPPORTED",
+          "type": "UnsupportedSyntaxError",
+          "phase": "registry",
+          "message": "An import grant names a module outside the supplied registry.",
+          "location": {
+            "filename": "<registry>",
+            "span": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "traceback": [],
+          "context": null,
+          "cause": null,
+          "suppressContext": false
+        },
+        "closed": null
+      },
+      {
+        "id": "typing-reflection",
+        "status": "refused",
+        "stdout": "",
+        "error": {
+          "code": "UNSUPPORTED",
+          "type": "UnsupportedSyntaxError",
+          "phase": "registry",
+          "message": "An import grant names a module outside the supplied registry.",
+          "location": {
+            "filename": "<registry>",
+            "span": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "traceback": [],
+          "context": null,
+          "cause": null,
+          "suppressContext": false
+        },
+        "closed": null
+      },
+      {
+        "id": "json-round-trip",
+        "status": "refused",
+        "stdout": "",
+        "error": {
+          "code": "UNSUPPORTED",
+          "type": "UnsupportedSyntaxError",
+          "phase": "registry",
+          "message": "An import grant names a module outside the supplied registry.",
+          "location": {
+            "filename": "<registry>",
+            "span": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "traceback": [],
+          "context": null,
+          "cause": null,
+          "suppressContext": false
+        },
+        "closed": null
+      },
+      {
+        "id": "native-await",
+        "status": "refused",
+        "stdout": "",
+        "error": {
+          "code": "UNSUPPORTED",
+          "type": "UnsupportedSyntaxError",
+          "phase": "parse",
+          "message": "Async and context managers require later stages.",
+          "location": {
+            "filename": "sources/app.py",
+            "span": [
+              1,
+              1,
+              1,
+              6
+            ]
+          },
+          "traceback": [],
+          "context": null,
+          "cause": null,
+          "suppressContext": false
+        },
+        "closed": null
+      },
+      {
+        "id": "original-workload",
+        "status": "refused",
+        "stdout": "",
+        "error": {
+          "code": "UNSUPPORTED",
+          "type": "UnsupportedSyntaxError",
+          "phase": "registry",
+          "message": "An import grant names a module outside the supplied registry.",
+          "location": {
+            "filename": "<registry>",
+            "span": [
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          "traceback": [],
+          "context": null,
+          "cause": null,
+          "suppressContext": false
+        },
+        "closed": null
+      }
+    ],
+    "revision": "5072ae1b11c24bae219a73c35caa30c5406194d4"
+  }
+}
