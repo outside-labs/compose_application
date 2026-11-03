@@ -23,6 +23,8 @@ runtime support retains its separate application gates.
 
 ## Plan and development queue
 
+- [Tabular Interfaces plan](IMPLEMENTATION_PLAN.md) and
+  [cross-repository Project](https://github.com/orgs/outside-labs/projects/19)
 - [Cohesion Block A Project](https://github.com/orgs/outside-labs/projects/18)
 - [Architecture charter](docs/cohesion-block-a.md)
 - [Shared contract register](docs/contracts.md)
