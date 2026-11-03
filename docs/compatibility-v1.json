@@ -45,6 +45,16 @@
     "api_revision": "5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1",
     "ui_revision": "dccfb4c465051fee87254687ac4b59a09f61369f"
   },
+  "validation": {
+    "profile": "cpython-service-enforce-type/1",
+    "packages": {
+      "expose-api": {"version": "0.1.0", "revision": "c20ce4aa3487d4913b56ff244a031f83de2df285"},
+      "backpack-store": {"version": "0.1.0", "revision": "54f5a1e883fcc32f8d87cc553dc83dae0434300d"},
+      "enforce-type": {"version": "0.1.0", "revision": null}
+    },
+    "engine_source_sha256": "9292836eaed067a2feba0eceb0fd91c928c45871dfc153d4728e37ab4e0eb9fe",
+    "acceptance": "5 required lifecycle/configuration checks and 16 checked HTTP cases across independent processes per artifact/platform"
+  },
   "previous_rest_ui": {
     "composition_revision": "98ec150f8bebec11013d750403ce529050042e2c",
     "api_revision": "01d7c486ae9041532c8bfe01d8a2a00496523e68",

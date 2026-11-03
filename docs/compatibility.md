@@ -113,3 +113,20 @@ source edits and a preexisting synthetic data file. Linux, macOS and Windows
 run the same installed checks. These prove finite reference-project creation
 and operation; arbitrary domains/schema migrations and production host selection
 remain application work. See [project setup](reference-projects.md).
+
+## Compiled validation selection
+
+The separate `validation` extra qualifies `cpython-service-enforce-type/1`
+through [explicit reference selection](validation-reference.md). Its immutable
+API source adds the optional adapter while its storage and published validator
+versions remain the same. The register's `validation` entry records exact
+provenance; minimum/current service, UI, live and generated-project sources retain
+their accepted combinations. The validation extra cannot be combined with those
+different API pins in one environment.
+
+`--validation` normally resolves each candidate wheel/source optional profile in
+a separate environment, verifies exact dependency revisions and published engine
+source bytes, and requires all five profile checks without skips plus sixteen
+real HTTP/process-restart cases. Base import independence is checked before
+optional installation. The normal platform compatibility receipt retains these
+results alongside the existing matrix.

@@ -29,8 +29,8 @@ class ServiceConfig:
     max_body_size: int = 65536
 
     def __post_init__(self):
-        if self.profile != "cpython-service/1":
-            raise ProfileError("Select the supported cpython-service/1 profile.")
+        if self.profile not in ("cpython-service/1", "cpython-service-enforce-type/1"):
+            raise ProfileError("Select cpython-service/1 or cpython-service-enforce-type/1 explicitly.")
         if not isinstance(self.model, type) or not is_dataclass(self.model):
             raise ValueError("Select an explicit trusted dataclass model.")
         if str(self.database) == ":memory:":
@@ -46,7 +46,7 @@ class ServiceConfig:
             raise ValueError("Choose an explicit static resource path.")
 
 
-def _dependencies():
+def _dependencies(*, extra="service"):
     try:
         for name in ("expose-api", "backpack-store", "enforce-type"):
             if metadata.version(name) != "0.1.0":
@@ -54,10 +54,16 @@ def _dependencies():
         api = import_module("expose_api")
         adapter = import_module("expose_api.backpack").BackpackStore
     except (ImportError, metadata.PackageNotFoundError):
-        raise ProfileError("Install compose-application[service] with the qualified development dependencies.") from None
+        raise ProfileError(f"Install compose-application[{extra}] with the qualified development dependencies.") from None
     if not all(callable(getattr(adapter, name, None)) for name in ("open", "get_row", "update_checked", "delete_checked", "aclose")):
         raise ProfileError("The installed storage adapter does not implement the selected profile.")
     return api, adapter
+
+
+def _validation_profile(validation):
+    if type(validation) is not str or validation not in ("builtin", "enforce-type"):
+        raise ValueError("Select builtin or enforce-type validation explicitly.")
+    return "cpython-service/1" if validation == "builtin" else "cpython-service-enforce-type/1"
 
 
 class Service:
@@ -91,11 +97,18 @@ async def application(config: ServiceConfig, *, store_type=None):
     """
     if not isinstance(config, ServiceConfig):
         raise TypeError("application() requires ServiceConfig.")
-    api, adapter = _dependencies()
+    api, adapter = _dependencies(extra="validation" if config.profile == "cpython-service-enforce-type/1" else "service")
     if store_type is not None:
         if not isinstance(store_type, type) or not issubclass(store_type, adapter):
             raise ProfileError("Custom stores must extend the qualified Backpack adapter.")
         adapter = store_type
+    schema_options = {}
+    if config.profile == "cpython-service-enforce-type/1":
+        try:
+            schema_type = import_module("expose_api.enforce_type").EnforceTypeSchema
+        except ImportError:
+            raise ProfileError("Install compose-application[validation] with the qualified adapter source.") from None
+        schema_options["schema"] = schema_type(config.model, id_field=config.id_field)
     store = await adapter.open(config.model, config.database, namespace=config.namespace,
                                table=config.table, type_key=config.type_key, id_field=config.id_field,
                                timeout=config.timeout, queue_limit=config.queue_limit)
@@ -103,7 +116,7 @@ async def application(config: ServiceConfig, *, store_type=None):
     try:
         app = api.App(max_body_size=config.max_body_size)
         resource = app.include(config.model, store=store, path=config.resource_path,
-                               id_field=config.id_field, public=config.public, authorize=config.authorize)
+                               id_field=config.id_field, public=config.public, authorize=config.authorize, **schema_options)
         app.state["profile"] = config.profile
         service.app, service.resource = app, resource
         yield service

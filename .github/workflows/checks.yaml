@@ -4,6 +4,14 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+    inputs:
+      macos_runner:
+        description: macOS hosted runner
+        type: choice
+        required: true
+        default: macos-15-intel
+        options: [macos-15-intel, macos-latest]
 
 permissions:
   contents: read
@@ -20,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, "${{ inputs.macos_runner || 'macos-15-intel' }}", windows-latest]
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -33,7 +41,7 @@ jobs:
       - run: uv run --locked python scripts/check_contracts.py
       - run: uv run --locked python -m unittest discover -s tests
       - run: uv run --locked python scripts/probe_track_b.py
-      - run: uv run --locked python scripts/check_distribution.py --matrix --ui --live --projects --report compatibility.json
+      - run: uv run --locked python scripts/check_distribution.py --matrix --ui --live --projects --validation --report compatibility.json
       - name: Retain exact compatibility receipt
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

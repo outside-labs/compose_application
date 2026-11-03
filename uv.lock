@@ -1,6 +1,16 @@
 version = 1
 revision = 5
 requires-python = ">=3.14"
+conflicts = [[
+    { package = "compose-application", extra = "service" },
+    { package = "compose-application", extra = "validation" },
+], [
+    { package = "compose-application", extra = "ui" },
+    { package = "compose-application", extra = "validation" },
+], [
+    { package = "compose-application", extra = "live" },
+    { package = "compose-application", extra = "validation" },
+]]
 
 [[package]]
 name = "backpack-store"
@@ -19,15 +29,18 @@ source = { editable = "." }
 
 [package.optional-dependencies]
 live = [
-    { name = "expose-api", extra = ["backpack"] },
+    { name = "expose-api", version = "0.1.0", source = { git = "https://github.com/outside-labs/expose_api.git?rev=5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1#5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1" }, extra = ["backpack"], marker = "extra == 'extra-19-compose-application-live' or extra == 'extra-19-compose-application-service' or extra == 'extra-19-compose-application-ui' or extra != 'extra-19-compose-application-validation'" },
     { name = "spatial-ui" },
 ]
 service = [
-    { name = "expose-api", extra = ["backpack"] },
+    { name = "expose-api", version = "0.1.0", source = { git = "https://github.com/outside-labs/expose_api.git?rev=5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1#5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1" }, extra = ["backpack"], marker = "extra == 'extra-19-compose-application-service' or (extra == 'extra-19-compose-application-live' and extra == 'extra-19-compose-application-validation') or (extra == 'extra-19-compose-application-ui' and extra == 'extra-19-compose-application-validation')" },
 ]
 ui = [
-    { name = "expose-api", extra = ["backpack"] },
+    { name = "expose-api", version = "0.1.0", source = { git = "https://github.com/outside-labs/expose_api.git?rev=5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1#5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1" }, extra = ["backpack"], marker = "extra == 'extra-19-compose-application-live' or extra == 'extra-19-compose-application-service' or extra == 'extra-19-compose-application-ui' or extra != 'extra-19-compose-application-validation'" },
     { name = "spatial-ui" },
+]
+validation = [
+    { name = "expose-api", version = "0.1.0", source = { git = "https://github.com/outside-labs/expose_api.git?rev=c20ce4aa3487d4913b56ff244a031f83de2df285#c20ce4aa3487d4913b56ff244a031f83de2df285" }, extra = ["backpack", "enforce-type"], marker = "extra == 'extra-19-compose-application-validation'" },
 ]
 
 [package.dev-dependencies]
@@ -40,10 +53,11 @@ requires-dist = [
     { name = "expose-api", extras = ["backpack"], marker = "extra == 'live'", git = "https://github.com/outside-labs/expose_api.git?rev=5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1" },
     { name = "expose-api", extras = ["backpack"], marker = "extra == 'service'", git = "https://github.com/outside-labs/expose_api.git?rev=5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1" },
     { name = "expose-api", extras = ["backpack"], marker = "extra == 'ui'", git = "https://github.com/outside-labs/expose_api.git?rev=5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1" },
+    { name = "expose-api", extras = ["backpack", "enforce-type"], marker = "extra == 'validation'", git = "https://github.com/outside-labs/expose_api.git?rev=c20ce4aa3487d4913b56ff244a031f83de2df285" },
     { name = "spatial-ui", marker = "extra == 'live'", git = "https://github.com/outside-labs/spatial_ui.git?rev=9e473497febdc505e54ba25536b65b68722d264b" },
     { name = "spatial-ui", marker = "extra == 'ui'", git = "https://github.com/outside-labs/spatial_ui.git?rev=9e473497febdc505e54ba25536b65b68722d264b" },
 ]
-provides-extras = ["service", "ui", "live"]
+provides-extras = ["validation", "service", "ui", "live"]
 
 [package.metadata.requires-dev]
 browser-tests = [{ name = "playwright", specifier = "==1.64.0" }]
@@ -64,7 +78,20 @@ source = { git = "https://github.com/outside-labs/expose_api.git?rev=5d284e18bce
 
 [package.optional-dependencies]
 backpack = [
-    { name = "backpack-store", extra = ["enforce-type"] },
+    { name = "backpack-store", extra = ["enforce-type"], marker = "extra == 'extra-19-compose-application-live' or extra == 'extra-19-compose-application-service' or extra == 'extra-19-compose-application-ui' or extra != 'extra-19-compose-application-validation'" },
+]
+
+[[package]]
+name = "expose-api"
+version = "0.1.0"
+source = { git = "https://github.com/outside-labs/expose_api.git?rev=c20ce4aa3487d4913b56ff244a031f83de2df285#c20ce4aa3487d4913b56ff244a031f83de2df285" }
+
+[package.optional-dependencies]
+backpack = [
+    { name = "backpack-store", extra = ["enforce-type"], marker = "extra == 'extra-19-compose-application-validation'" },
+]
+enforce-type = [
+    { name = "enforce-type" },
 ]
 
 [[package]]
