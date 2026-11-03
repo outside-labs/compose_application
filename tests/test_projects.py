@@ -1,12 +1,14 @@
 import asyncio
 import importlib.util
+import os
 from pathlib import Path
 import sys
 from tempfile import TemporaryDirectory
 import tomllib
 import unittest
+from unittest.mock import patch
 
-from compose_application.projects import PROFILES, ProjectSpec, REFERENCE_REVISION, render_project
+from compose_application.projects import PROFILES, ProjectSpec, REFERENCE_REVISION, create_project, render_project
 
 
 class SelectionTests(unittest.TestCase):
@@ -69,6 +71,67 @@ class RenderTests(unittest.TestCase):
                 for name in tuple(sys.modules):
                     if name == "garden_board" or name.startswith("garden_board."):
                         del sys.modules[name]
+
+
+class CreationTests(unittest.TestCase):
+    def test_repeat_preserves_owned_edits_data_and_removed_files(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory) / "garden"
+            spec = ProjectSpec("garden-board", "service")
+            self.assertTrue(create_project(spec, root))
+            (root / "README.md").write_text("Owner's changes", encoding="utf-8")
+            (root / "work-items.sqlite3").write_bytes(b"existing application data")
+            (root / "src/garden_board/app.py").unlink()
+            before = {path.relative_to(root): (path.read_bytes(), path.stat().st_mtime_ns)
+                      for path in root.rglob("*") if path.is_file()}
+            self.assertFalse(create_project(spec, root))
+            after = {path.relative_to(root): (path.read_bytes(), path.stat().st_mtime_ns)
+                     for path in root.rglob("*") if path.is_file()}
+            self.assertEqual(after, before)
+            with self.assertRaises(FileExistsError):
+                create_project(ProjectSpec("other-board", "service"), root)
+
+    def test_refuses_existing_directory_file_and_malformed_receipt(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory) / "garden"
+            root.mkdir()
+            spec = ProjectSpec("garden-board", "service")
+            for content in (None, "{}", "not JSON"):
+                if content is not None:
+                    (root / "reference-project.json").write_text(content, encoding="utf-8")
+                with self.assertRaises(FileExistsError):
+                    create_project(spec, root)
+            file = Path(directory) / "file"
+            file.write_text("owner", encoding="utf-8")
+            with self.assertRaises(FileExistsError):
+                create_project(spec, file)
+            self.assertEqual(file.read_text(), "owner")
+
+    def test_failed_creation_cleans_own_files_but_retains_owner_additions(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory) / "garden"
+            original = os.link
+            def fail(source, path):
+                if path.name == "README.md":
+                    (root / "owner.txt").write_text("keep", encoding="utf-8")
+                    raise OSError("simulated write failure")
+                return original(source, path)
+            with patch("compose_application.projects.os.link", fail), self.assertRaises(OSError):
+                create_project(ProjectSpec("garden-board", "service"), root)
+            self.assertEqual([path.name for path in root.iterdir()], ["owner.txt"])
+            self.assertEqual(sorted(path.name for path in Path(directory).iterdir()), ["garden"])
+
+    def test_symlink_destinations_are_refused(self):
+        with TemporaryDirectory() as directory:
+            root, link = Path(directory) / "real", Path(directory) / "link"
+            root.mkdir()
+            try:
+                link.symlink_to(root, target_is_directory=True)
+            except OSError:
+                self.skipTest("platform does not grant symlink creation")
+            with self.assertRaises(FileExistsError):
+                create_project(ProjectSpec("garden-board", "service"), link)
+            self.assertEqual(list(root.iterdir()), [])
 
 
 if __name__ == "__main__":
