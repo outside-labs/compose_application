@@ -23,7 +23,7 @@ service = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "expose-api", extras = ["backpack"], marker = "extra == 'service'", git = "https://github.com/outside-labs/expose_api.git?rev=aef200defd2514c38e3857f6278ea45aa577e369" }]
+requires-dist = [{ name = "expose-api", extras = ["backpack"], marker = "extra == 'service'", git = "https://github.com/outside-labs/expose_api.git?rev=95d2e1ce0045a7e24e08041d217cf1bbcd1edd00" }]
 provides-extras = ["service"]
 
 [[package]]
@@ -38,7 +38,7 @@ wheels = [
 [[package]]
 name = "expose-api"
 version = "0.1.0"
-source = { git = "https://github.com/outside-labs/expose_api.git?rev=aef200defd2514c38e3857f6278ea45aa577e369#aef200defd2514c38e3857f6278ea45aa577e369" }
+source = { git = "https://github.com/outside-labs/expose_api.git?rev=95d2e1ce0045a7e24e08041d217cf1bbcd1edd00#95d2e1ce0045a7e24e08041d217cf1bbcd1edd00" }
 
 [package.optional-dependencies]
 backpack = [
