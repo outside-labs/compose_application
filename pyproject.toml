@@ -8,10 +8,14 @@ authors = [{ name = "ellainng" }]
 dependencies = []
 
 [project.optional-dependencies]
-service = ["expose-api[backpack] @ git+https://github.com/outside-labs/expose_api.git@01d7c486ae9041532c8bfe01d8a2a00496523e68"]
+service = ["expose-api[backpack] @ git+https://github.com/outside-labs/expose_api.git@5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1"]
 ui = [
-    "expose-api[backpack] @ git+https://github.com/outside-labs/expose_api.git@01d7c486ae9041532c8bfe01d8a2a00496523e68",
-    "spatial-ui @ git+https://github.com/outside-labs/spatial_ui.git@cf97352f0d1c4a3f226620bc575ef6dcc2880eaf",
+    "expose-api[backpack] @ git+https://github.com/outside-labs/expose_api.git@5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1",
+    "spatial-ui @ git+https://github.com/outside-labs/spatial_ui.git@dccfb4c465051fee87254687ac4b59a09f61369f",
+]
+live = [
+    "expose-api[backpack] @ git+https://github.com/outside-labs/expose_api.git@5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1",
+    "spatial-ui @ git+https://github.com/outside-labs/spatial_ui.git@dccfb4c465051fee87254687ac4b59a09f61369f",
 ]
 
 [project.urls]

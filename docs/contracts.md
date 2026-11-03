@@ -35,6 +35,16 @@ The implementation queue is in [the Project](https://github.com/orgs/outside-lab
 
 ## Decision boundaries
 
+The [protected native live reference](live-reference.md) adopts the API's
+read-only single-record snapshot protocol, opaque cursors, bounded polling and
+fresh-snapshot resync. This concrete profile carries no write revision in an
+event and does not adopt the early proposed event fixtures as a wire format.
+Checked REST revisions, remote cursors, UI render versions and connection
+generations remain separate. Credentials and current record policies are
+application-owned; live UI admission preserves dirty edits until explicit
+refresh/merge. The exact qualified source revisions are in the compatibility
+register.
+
 Select the concrete PostgreSQL driver, browser-local persistence adapter and
 event delivery implementation in their owning tasks. No external broker,
 browser SQL engine, ORM runtime or mandatory web dependency is selected by this
