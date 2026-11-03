@@ -51,8 +51,9 @@ def main():
             if args.service:
                 run("uv", "pip", "install", "--python", python, str(artifact) + "[service]", cwd=work)
                 run(python, "-I", "-c", "from expose_api.backpack import BackpackStore; from compose_application import application", cwd=work)
-                run(python, "-I", "-W", "error::ResourceWarning", "-m", "unittest", "discover",
-                    "-s", work / "tests", "-p", "test_service.py", "-v", cwd=work)
+                for suite in ("test_service.py", "test_reference.py"):
+                    run(python, "-I", "-W", "error::ResourceWarning", "-m", "unittest", "discover",
+                        "-s", work / "tests", "-p", suite, "-v", cwd=work)
             print(f"Installed {kind} passed: {artifact.name}", flush=True)
 
 
