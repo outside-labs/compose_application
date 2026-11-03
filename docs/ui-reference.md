@@ -60,6 +60,7 @@ and source profiles each repeat those checks with exact dependency provenance,
 alongside the existing minimum/current service and upgrade matrix. Linux Chromium
 acceptance runs the actual preview and REST processes with independent browser
 contexts, keyboard/checkbox input, validation focus, preserved edits, comparison,
-discard, list refresh, phone/desktop widths, reduced motion and graceful process
+discard, list refresh, phone/desktop widths, reduced motion, cancellation after
+a real committed save, refusal of its late completion and graceful process
 restart. `ui-browser-receipt.json` records that finite browser acceptance; it is
 retained by CI alongside the platform-specific compatibility receipts.

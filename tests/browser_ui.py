@@ -101,11 +101,29 @@ class BrowserUI(unittest.TestCase):
                     for width in (390, 1280):
                         a.set_viewport_size({"width": width, "height": 900})
                         self.assertFalse(a.evaluate("document.documentElement.scrollWidth > innerWidth"))
+                    # Hold a real committed save response, then tear down its browser binding.
+                    b.evaluate('''() => {
+                      const original = window.fetch;
+                      window.fetch = async (...args) => {
+                        const response = await original(...args);
+                        if (JSON.parse(args[1].body).payload?.kind === "submit") {
+                          await new Promise(resolve => { window.releaseSave = resolve; });
+                        }
+                        return response;
+                      };
+                    }''')
+                    apply(b)
+                    b.wait_for_function("() => typeof window.releaseSave === 'function'")
+                    before_stop = b.locator("#sui-app").get_attribute("data-version")
+                    b.locator("#sui-app").dispatch_event("sui:stop")
+                    b.evaluate("() => window.releaseSave()")
+                    expect(b.locator("#sui-status")).to_contain_text("Reload to reconcile")
+                    self.assertEqual(b.locator("#sui-app").get_attribute("data-version"), before_stop)
                 with running_ui(database) as origin:
                     a.goto(origin)
                     field(a, "key").fill("item-001")
                     apply(a, "load")
-                    revision(a, "3")
+                    revision(a, "4")
                     expect(field(a, "title")).to_have_value("Retained after restart")
                     apply(a, "delete")
                     expect(field(a, "key")).to_have_value("")
@@ -116,7 +134,8 @@ class BrowserUI(unittest.TestCase):
                            "independent_sessions": 2, "widths": [390, 1280], "process_restart": True,
                            "checks": ["validation-focus", "keyboard-submit", "checkbox", "checked-conflict",
                                       "preserved-draft", "refresh-merge-discard", "committed-projection",
-                                      "independent-session-edit", "bounded-list", "restart-persistence", "delete", "reduced-motion"]}
+                                      "independent-session-edit", "bounded-list", "canceled-dispatched-save",
+                                      "late-completion-refusal", "restart-persistence", "delete", "reduced-motion"]}
                 Path("ui-browser-receipt.json").write_text(json.dumps(receipt, indent=2) + "\n")
             finally:
                 first.close()
