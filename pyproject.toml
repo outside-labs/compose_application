@@ -11,11 +11,11 @@ dependencies = []
 service = ["expose-api[backpack] @ git+https://github.com/outside-labs/expose_api.git@5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1"]
 ui = [
     "expose-api[backpack] @ git+https://github.com/outside-labs/expose_api.git@5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1",
-    "spatial-ui @ git+https://github.com/outside-labs/spatial_ui.git@dccfb4c465051fee87254687ac4b59a09f61369f",
+    "spatial-ui @ git+https://github.com/outside-labs/spatial_ui.git@9e473497febdc505e54ba25536b65b68722d264b",
 ]
 live = [
     "expose-api[backpack] @ git+https://github.com/outside-labs/expose_api.git@5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1",
-    "spatial-ui @ git+https://github.com/outside-labs/spatial_ui.git@dccfb4c465051fee87254687ac4b59a09f61369f",
+    "spatial-ui @ git+https://github.com/outside-labs/spatial_ui.git@9e473497febdc505e54ba25536b65b68722d264b",
 ]
 
 [project.urls]
