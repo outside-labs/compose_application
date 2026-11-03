@@ -55,3 +55,9 @@ The existing `enforce_type`/`expose_api` assessment remains an optional parity
 investigation. Selecting validation for Backpack does not replace API-specific
 identity, visibility or serialization rules. JSON Schema/OpenAPI generation
 must describe actual runtime behavior for each supported model profile.
+
+## Tabular sources
+
+[Tabular interfaces version 1](tabular-v1.md) defines independent identities,
+scalar/query limits, detached snapshots and checked single-cell outcomes.
+[Finite fixtures](contracts/tabular-v1.json) are checked without integration imports.

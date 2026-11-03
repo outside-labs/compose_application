@@ -1,0 +1,180 @@
+{
+  "schema": {
+    "contract": "tabular/1",
+    "table_id": "work_items",
+    "schema_version": "1",
+    "columns": [
+      {
+        "id": "title",
+        "label": "Title",
+        "type": "text",
+        "nullable": false,
+        "visible": true,
+        "sortable": true,
+        "searchable": true,
+        "writable": true
+      },
+      {
+        "id": "done",
+        "label": "Done",
+        "type": "boolean",
+        "nullable": false,
+        "visible": true,
+        "sortable": true,
+        "searchable": false,
+        "writable": true
+      },
+      {
+        "id": "rank",
+        "label": "Rank",
+        "type": "integer",
+        "nullable": true,
+        "visible": true,
+        "sortable": true,
+        "searchable": false,
+        "writable": true
+      },
+      {
+        "id": "owner",
+        "label": "Owner",
+        "type": "text",
+        "nullable": false,
+        "visible": false,
+        "sortable": false,
+        "searchable": false,
+        "writable": false
+      }
+    ]
+  },
+  "pages": [
+    {
+      "session": "session-a",
+      "generation": 2,
+      "query": {
+        "columns": [
+          "title",
+          "done",
+          "rank"
+        ],
+        "order": [
+          {
+            "column_id": "title",
+            "descending": false
+          }
+        ],
+        "search": null
+      },
+      "rows": [
+        {
+          "key": "row-002",
+          "revision": "1",
+          "values": {
+            "title": "Alpha",
+            "done": false,
+            "rank": 2
+          }
+        },
+        {
+          "key": "row-001",
+          "revision": "3",
+          "values": {
+            "title": "Zulu",
+            "done": false,
+            "rank": null
+          }
+        }
+      ],
+      "next_cursor": null
+    },
+    {
+      "session": "session-b",
+      "generation": 0,
+      "query": {
+        "columns": [
+          "done",
+          "title"
+        ],
+        "order": [],
+        "search": {
+          "fields": [
+            "title"
+          ],
+          "term": "Zulu"
+        }
+      },
+      "rows": [
+        {
+          "key": "row-001",
+          "revision": "3",
+          "values": {
+            "done": false,
+            "title": "Zulu"
+          }
+        }
+      ],
+      "next_cursor": null
+    }
+  ],
+  "edits": [
+    {
+      "request": {
+        "table_id": "work_items",
+        "key": "row-002",
+        "column_id": "title",
+        "expected_revision": "1",
+        "value": "Beta"
+      },
+      "outcome": "saved",
+      "draft_preserved": false,
+      "reason": "Sorted row retains durable key."
+    },
+    {
+      "request": {
+        "table_id": "work_items",
+        "key": "row-001",
+        "column_id": "done",
+        "expected_revision": "2",
+        "value": true
+      },
+      "outcome": "revision_conflict",
+      "draft_preserved": true,
+      "reason": "Another cell changed this row."
+    },
+    {
+      "request": {
+        "table_id": "work_items",
+        "key": "row-002",
+        "column_id": "rank",
+        "expected_revision": "2",
+        "value": "two"
+      },
+      "outcome": "validation_error",
+      "draft_preserved": true,
+      "reason": "Integer column refuses text."
+    },
+    {
+      "request": {
+        "table_id": "work_items",
+        "key": "row-001",
+        "column_id": "owner",
+        "expected_revision": "3",
+        "value": "reader"
+      },
+      "outcome": "read_only",
+      "draft_preserved": true,
+      "reason": "Hidden fields never enter projections."
+    },
+    {
+      "request": {
+        "table_id": "work_items",
+        "key": "row-002",
+        "column_id": "done",
+        "expected_revision": "2",
+        "value": true
+      },
+      "outcome": "uncertain",
+      "draft_preserved": true,
+      "reason": "Connection lost after save; authoritative read required."
+    }
+  ]
+}
