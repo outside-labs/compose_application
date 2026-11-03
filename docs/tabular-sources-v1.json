@@ -1,0 +1,32 @@
+{
+  "format": "tabular-sources/1",
+  "profile": "cpython-tabular/1",
+  "python": "CPython 3.14",
+  "operating_systems": [
+    "Linux",
+    "Darwin",
+    "Windows"
+  ],
+  "packages": {
+    "expose-api": {
+      "version": "0.1.0",
+      "revision": "248ea04ff9ade8973e74cc2122e66f8933c4fb97"
+    },
+    "spatial-ui": {
+      "version": "0.1.0",
+      "revision": "777502d655eb00aa5285e73b272030520ae77fa6"
+    },
+    "backpack-store": {
+      "version": "0.1.0",
+      "revision": "99a5fdee1e79e0eee9abde4be533d4ec2586120d"
+    },
+    "enforce-type": {
+      "version": "0.1.0",
+      "revision": null
+    },
+    "headless-spreadsheets": {
+      "version": "0.1.0",
+      "revision": "b0902fbf1c8b51ff0de167de697aee65bc83ca80"
+    }
+  }
+}
