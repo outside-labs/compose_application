@@ -10,11 +10,11 @@ These are explicitly qualified development sources. The separately published
 | Profile | Composition source | Expose API source | Backpack Store source | Enforce Type |
 | --- | --- | --- | --- | --- |
 | Minimum service | `5e9bdf4bb9479734f9214bbe241290bae28827fa` | `aef200defd2514c38e3857f6278ea45aa577e369` | `54f5a1e883fcc32f8d87cc553dc83dae0434300d` | Published `0.1.0` |
-| Current service | Exact candidate source and wheel/source hashes in each receipt | `01d7c486ae9041532c8bfe01d8a2a00496523e68` | `54f5a1e883fcc32f8d87cc553dc83dae0434300d` | Published `0.1.0` |
+| Current service | Exact candidate source and wheel/source hashes in each receipt | `5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1` | `54f5a1e883fcc32f8d87cc553dc83dae0434300d` | Published `0.1.0` |
 
 The minimum composition commit contains the accepted REST reference and its
 declared dependency pins. The current profile advances the optional API pin to
-the accepted OpenAPI and transaction-validation repair revision. Both retain the same scalar
+the accepted access, event and checked-predicate revision. Both retain the same scalar
 SQLite contract. Their package metadata versions happen to match; immutable
 source revisions distinguish these development combinations. No Cartesian
 product or synchronized package release is implied.
@@ -56,8 +56,10 @@ Track B is separate. Its original-source prerequisite workload and reduced-sourc
 qualification, granted view/storage APIs, browser devices and teardown evidence
 remain under their existing runtime owners. The existing finite Node prerequisite
 probe still runs in CI; it does not constitute browser application acceptance.
-There is no accepted browser-local or connected-browser profile in this matrix.
-Publication, deployment and identity/access policy retain their separate gates.
+No Track B browser-local or connected-browser runtime profile is accepted by this matrix.
+Publication and deployment retain their separate gates. The optional
+[protected live reference](live-reference.md) selects an explicit identity and
+record-access profile; it does not select browser-local Track B capabilities.
 
 The optional [typed UI reference](ui-reference.md) adds a spatial_ui source pin
 to the current service profile. Each current installed artifact verifies its
@@ -66,3 +68,9 @@ Chromium on Linux separately verifies the real loopback preview, independent
 contexts, typing/keyboard/checkboxes, validation focus, conflict/merge/discard,
 preserved drafts, phone/desktop widths, reduced motion and graceful restart.
 Those finite browser receipts do not qualify Track B browser-local execution.
+
+The `live` extra selects API `5d284e18bce7ae9f07ba64ac9297dad55a3fc5b1` and UI
+`dccfb4c465051fee87254687ac4b59a09f61369f`. The existing service/UI entry points
+consume these current compatible sources; the immutable minimum service and
+prior REST/UI receipts remain recorded separately in the register. Installing
+the base package still imports none of the integration packages.

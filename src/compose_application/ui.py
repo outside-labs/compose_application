@@ -49,14 +49,14 @@ def resource_client(origin):
     return ResourceClient(HTTPTransport(origin), ResourceSpec("/work-items", schema, ("key", "title", "done")))
 
 
-def make_ui(origin):
+def make_ui(origin, *, client=None, live=None):
     """Return a fresh-session loopback App; the caller owns the API's lifecycle."""
     App, Component, _, _, _, html, ResourceForm, _, _, _, TransportError = _ui_dependencies()
-    client = resource_client(origin)
+    client = resource_client(origin) if client is None else client
 
     class Workspace(Component):
         def __init__(self):
-            self.editor = ResourceForm(client, title="Edit a work item")
+            self.editor = ResourceForm(client, title="Edit a work item", **({"live": live} if live is not None else {}))
             self.items, self.message = (), ""
             self.refresh()
 

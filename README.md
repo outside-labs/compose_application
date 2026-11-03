@@ -71,3 +71,9 @@ The preview remains on loopback, with independent browser drafts, checked edits,
 explicit conflict/merge choices and durable SQLite records. The `check` command
 provides 15 form/REST checks across process restart; CI also exercises the actual
 UI in Chromium and the optional profile in installed wheel/source environments.
+
+The optional [protected native live reference](docs/live-reference.md) adds
+same-origin cookie verification, per-principal native UI sessions and persistent
+single-record WebSocket snapshots. Install with `uv sync --locked --extra live`.
+The caller supplies existing credentials and a WebSocket-capable ASGI host;
+publication and public hosting remain separate.
