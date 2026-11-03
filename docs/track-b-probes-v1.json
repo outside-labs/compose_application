@@ -2,7 +2,7 @@
   "schema_version": 1,
   "workload": "work-items/1",
   "source_kind": "original",
-  "workload_sha256": "014980140d68658aaa5d66706d7253a1cafe73434506ccea186abe03e6da5184",
+  "workload_sha256": "045ac7758673c220332b9387606cb20ef5fb6b1daf532d3257ee3966603dad40",
   "cpython": "3.14.7",
   "os": "darwin",
   "machine": "arm64",
@@ -39,7 +39,7 @@
     },
     {
       "id": "original-workload",
-      "source_sha256": "d6a03e44e915165bf6c73f5099322a2951c307f45af155eeab774849c9d3cf9d",
+      "source_sha256": "ccdd4493fe5daf5702a27b2fa24bf9c6be310058cac4b5b3b3eb185ab287db6b",
       "cpython_stdout": "{\"key\":\"item-001\",\"revision\":\"1\",\"schema_version\":1,\"value\":{\"done\":false,\"title\":\"Garden\"}}\n"
     }
   ],

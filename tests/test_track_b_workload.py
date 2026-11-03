@@ -31,6 +31,13 @@ class WorkloadTests(unittest.TestCase):
         self.assertEqual(render_item(WorkItem("item-001", "<b>Garden</b>")),
                          {"kind": "text", "strings": ["", ": ", ""], "values": ["<b>Garden</b>", "False"]})
 
+    def test_non_utf8_text_and_oversized_saved_records_are_refused(self):
+        with self.assertRaises(ValueError):
+            dump_item(WorkItem("item-001", "\ud800"), "1")
+        for raw in ("\ud800", "x" * 65537):
+            with self.subTest(size=len(raw)), self.assertRaises(ValueError):
+                load_item(raw)
+
     def test_saved_version_unknown_fields_and_types_are_refused(self):
         good = json.loads(dump_item(WorkItem("item-001", "Garden"), "1"))
         bad = [{**good, "schema_version": True}, {**good, "schema_version": 2},

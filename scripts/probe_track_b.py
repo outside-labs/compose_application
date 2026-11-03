@@ -52,6 +52,8 @@ def main():
         if [row["id"] for row in engine["results"]] != [case["id"] for case in cases]:
             raise RuntimeError("Engine probe receipt does not match the requested cases.")
         for expected, actual in zip(results, engine["results"], strict=True):
+            if actual["id"] == "domain-values" and actual["status"] != "supported":
+                raise RuntimeError("The accepted domain-values prerequisite regressed.")
             if actual["status"] == "supported" and actual["stdout"] != expected["cpython_stdout"]:
                 raise RuntimeError("Supported runtime probe differs from CPython: " + actual["id"])
         receipt["engine"] = engine
