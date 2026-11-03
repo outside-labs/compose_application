@@ -18,9 +18,9 @@ from playwright.sync_api import expect, sync_playwright
 
 
 @contextmanager
-def running_ui(database, principal="alice"):
+def running_ui(database, principal="alice", *, editable=False):
     process = subprocess.Popen([sys.executable, "-I", "-u", "-m", "compose_application.tabular", "serve",
-        "--database", str(database), "--port", "0", "--principal", principal], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        "--database", str(database), "--port", "0", "--principal", principal, *(["--editable"] if editable else [])], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     lines = Queue()
     threading.Thread(target=lambda: lines.put(process.stdout.readline()), daemon=True).start()
     try:
