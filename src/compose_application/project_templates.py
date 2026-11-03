@@ -89,7 +89,8 @@ async def request(port, method, path, *, data=None, revision=None):
         if not 0 <= size <= 65536:
             raise RuntimeError("Acceptance response exceeded its bound.")
         payload = await asyncio.wait_for(reader.readexactly(size), 5)
-        return int(status.split()[1]), fields, json.loads(payload) if payload else None
+        value = json.loads(payload) if payload and "application/json" in fields.get("content-type", "") else payload.decode("utf-8")
+        return int(status.split()[1]), fields, value
     finally:
         writer.close()
         await writer.wait_closed()
@@ -149,6 +150,82 @@ async def phase(database, name):
             await check("DELETE", "/work-items/garden", 409, revision="1")
             await check("DELETE", "/work-items/garden", 204, revision="2")
             await check("GET", "/work-items/garden", 404)
+        else:
+            raise ValueError("Unknown acceptance phase.")
+    return {"phase": name, "checks": checks, "closed": True}
+'''
+
+UI_APP = '''"""Application-owned loopback UI and persistent checked REST lifecycle."""
+
+import asyncio
+from contextlib import asynccontextmanager
+from pathlib import Path
+import threading
+
+from compose_application.reference import reference_application
+from compose_application.ui import make_ui, resource_client
+
+
+@asynccontextmanager
+async def open_server(database, *, port=0):
+    from expose_api import serve
+    async with reference_application(Path(database)) as application:
+        async with serve(application.app, port=0) as api:
+            origin = f"http://127.0.0.1:{api.sockets[0].getsockname()[1]}"
+            with make_ui(origin).make_server(port) as ui:
+                thread = threading.Thread(target=ui.serve_forever, kwargs={"poll_interval": 0.05}, daemon=True)
+                thread.start()
+                try:
+                    yield ui, resource_client(origin)
+                finally:
+                    await asyncio.to_thread(ui.shutdown)
+                    await asyncio.to_thread(thread.join, 5)
+                    if thread.is_alive():
+                        raise RuntimeError("UI server did not stop within its shutdown bound.")
+
+
+async def serve(database, *, port=8000):
+    async with open_server(database, port=port) as (ui, _):
+        print(f"Work items: http://127.0.0.1:{ui.server_port}", flush=True)
+        await asyncio.Event().wait()
+'''
+
+UI_PHASE = '''
+
+async def phase(database, name):
+    from spatial_ui import Session
+    from spatial_ui.resource_form import ResourceForm
+    from .app import open_server
+    checks = 0
+    def check(value):
+        nonlocal checks
+        require(value)
+        checks += 1
+    async with open_server(database) as (ui, client):
+        status, _, page = await request(ui.server_port, "GET", "/")
+        check(status == 200 and "Work items" in page)
+        first, second = Session(ResourceForm(client)), Session(ResourceForm(client))
+        async def submit(session, **values):
+            snapshot = session.render()
+            fields = {**session.component.binding.draft, "operation": "save", **values}
+            result = await asyncio.to_thread(session.dispatch, snapshot.event_ids[0], snapshot.version,
+                                            {"kind": "submit", "fields": fields})
+            return result.form_result.status
+        if name == "write":
+            check(await submit(first, key="garden", title="") == "invalid")
+            check(await submit(first, key="garden", title="Garden 🌱") == "saved")
+            check(await submit(second, key="garden", operation="load") == "loaded")
+            check(await submit(first, title="Water garden") == "saved")
+            check(await submit(second, title="Local merge") == "conflict")
+            check(second.component.binding.draft["title"] == "Local merge")
+            check(await submit(second, operation="load") == "loaded")
+            check(second.component.binding.draft["title"] == "Local merge" and second.component.binding.committed["title"] == "Water garden")
+            check(await submit(second) == "saved")
+        elif name == "reload":
+            check(await submit(first, key="garden", operation="load") == "loaded")
+            check(first.component.binding.committed["title"] == "Local merge" and first.component.binding.revision == "3")
+            check(await submit(first, operation="delete") == "deleted")
+            check(await asyncio.to_thread(client.list) == ())
         else:
             raise ValueError("Unknown acceptance phase.")
     return {"phase": name, "checks": checks, "closed": True}

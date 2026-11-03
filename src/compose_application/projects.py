@@ -56,9 +56,10 @@ def render_project(spec: ProjectSpec):
     """Return detached UTF-8 source files without writing or installing anything."""
     if type(spec) is not ProjectSpec:
         raise TypeError("render_project() requires ProjectSpec.")
-    if spec.profile != "service":
-        raise ValueError("This renderer currently supports the service reference.")
-    from .project_templates import COMMAND, HTTP_CHECKS, SERVICE_APP, SERVICE_PHASE
+    if spec.profile == "live":
+        raise ValueError("This renderer currently supports service and ui references.")
+    from .project_templates import COMMAND, HTTP_CHECKS, SERVICE_APP, SERVICE_PHASE, UI_APP, UI_PHASE
+    app_source, phase_source = (SERVICE_APP, SERVICE_PHASE) if spec.profile == "service" else (UI_APP, UI_PHASE)
     metadata = f'''[project]
 name = "{spec.name}"
 version = "0.1.0"
@@ -74,7 +75,7 @@ build-backend = "uv_build"
 '''
     readme = f'''# {spec.name}
 
-Application-owned `service` reference project for synthetic work items.
+Application-owned `{spec.profile}` reference project for synthetic work items.
 Composition source: `{spec.source}`. Python 3.14+ and uv are required.
 
 ```sh
@@ -93,12 +94,14 @@ Dependencies use qualified development sources, not published release promises.
 Generation installs nothing and repeating the same request never updates files.
 Publication and public hosting require separate setup.
 '''
-    checks = (HTTP_CHECKS + SERVICE_PHASE).replace("__PROJECT_MODULE__", spec.module).replace("__PROJECT_PROFILE__", spec.profile)
+    if spec.profile == "ui":
+        readme += "\nThe UI opens at the printed loopback address. Browser drafts are independent;\nSave uses checked revisions. Load refreshes the baseline while retaining edits\nfor an explicit merge; Discard replaces the draft with that baseline. Shutdown\nstops the UI listener/worker before closing REST and storage.\n"
+    checks = (HTTP_CHECKS + phase_source).replace("__PROJECT_MODULE__", spec.module).replace("__PROJECT_PROFILE__", spec.profile)
     return {"pyproject.toml": metadata, "README.md": readme,
             ".gitignore": ".venv/\n__pycache__/\n*.py[cod]\n*.sqlite3*\n.env\n",
             "reference-project.json": json.dumps(spec.selection(), indent=2, sort_keys=True) + "\n",
             f"src/{spec.module}/__init__.py": '"""Application-owned reference project."""\n',
-            f"src/{spec.module}/app.py": SERVICE_APP,
+            f"src/{spec.module}/app.py": app_source,
             f"src/{spec.module}/__main__.py": COMMAND,
             f"src/{spec.module}/checks.py": checks}
 

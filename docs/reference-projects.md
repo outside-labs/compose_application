@@ -57,5 +57,13 @@ owner inspection before another creation request. Existing empty directories,
 files and symbolic-link destinations are refused. A matching repeat returns
 `created: false` and never recreates missing files or changes modification times.
 
+Select `--profile ui` for the typed form workflow with the same install/check/
+serve commands. Its generated `app.py` owns both loopback listeners and drains
+the UI worker before REST/storage close. The generated check opens the real UI
+page and verifies two independent public form sessions, validation, preserved
+drafts on conflicts, explicit merge, durable reopen and checked deletion.
+The accepted component's broader Chromium evidence remains in the UI matrix;
+the generated-project checks verify the selected assembly and public forms.
+
 Implementation and acceptance: [CA-09](https://github.com/outside-labs/compose_application/issues/9),
 [STYLE-01–06](https://github.com/outside-labs/compose_application/issues/22).
