@@ -190,6 +190,18 @@ class CreationTests(unittest.TestCase):
                 create_project(ProjectSpec("garden-board", "service"), link)
             self.assertEqual(list(root.iterdir()), [])
 
+    def test_interruption_during_publication_removes_incomplete_project(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory) / "garden"
+            original = os.link
+            def interrupt(source, path):
+                if path.name == "app.py":
+                    raise KeyboardInterrupt
+                return original(source, path)
+            with patch("compose_application.projects.os.link", interrupt), self.assertRaises(KeyboardInterrupt):
+                create_project(ProjectSpec("garden-board", "service"), root)
+            self.assertEqual(list(Path(directory).iterdir()), [])
+
 
 if __name__ == "__main__":
     unittest.main()

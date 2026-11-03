@@ -77,22 +77,29 @@ def require(condition):
 
 async def accept():
     phases = []
-    code = "import asyncio,json,sys; from __PROJECT_MODULE__.checks import phase; print(json.dumps(asyncio.run(phase(sys.argv[1],sys.argv[2]))))"
+    code = "import asyncio,faulthandler,json,sys; from __PROJECT_MODULE__.checks import phase; faulthandler.dump_traceback_later(15); print(json.dumps(asyncio.run(phase(sys.argv[1],sys.argv[2])))); faulthandler.cancel_dump_traceback_later()"
     with TemporaryDirectory(prefix="reference-project-check-") as directory:
         for name in ("write", "reload"):
             process = await asyncio.create_subprocess_exec(
                 sys.executable, "-I", "-W", "error::ResourceWarning", "-c", code,
                 str(Path(directory) / "check.sqlite3"), name,
                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            communication = asyncio.create_task(process.communicate())
             try:
-                output, errors = await asyncio.wait_for(process.communicate(), 30)
+                try:
+                    output, errors = await asyncio.wait_for(asyncio.shield(communication), 30)
+                except TimeoutError:
+                    if process.returncode is None:
+                        process.kill()
+                    _, errors = await communication
+                    raise RuntimeError("Generated check timed out during " + name + ": " + errors.decode("utf-8", errors="replace")[-8000:]) from None
                 if process.returncode:
                     raise RuntimeError("Generated check failed during " + name + ": " + errors.decode("utf-8", errors="replace")[-4000:])
                 phases.append(json.loads(output))
             finally:
                 if process.returncode is None:
                     process.kill()
-                    await process.communicate()
+                await communication
     return {"profile": "__PROJECT_PROFILE__", "checks": sum(item["checks"] for item in phases),
             "phases": phases, "process_restart": True, "passed": True}
 '''
@@ -128,7 +135,9 @@ async def request(port, method, path, *, data=None, revision=None):
 SERVICE_PHASE = '''
 
 async def phase(database, name):
+    import threading
     from .app import open_server
+    threads = {thread.ident for thread in threading.enumerate()}
     async with open_server(database) as server:
         port = server.sockets[0].getsockname()[1]
         checks = 0
@@ -154,6 +163,7 @@ async def phase(database, name):
             await check("GET", "/work-items/garden", 404)
         else:
             raise ValueError("Unknown acceptance phase.")
+    require({thread.ident for thread in threading.enumerate()} == threads)
     return {"phase": name, "checks": checks, "closed": True}
 '''
 
@@ -195,9 +205,11 @@ async def serve(database, *, port=8000):
 UI_PHASE = '''
 
 async def phase(database, name):
+    import threading
     from spatial_ui import Session
     from spatial_ui.resource_form import ResourceForm
     from .app import open_server
+    threads = {thread.ident for thread in threading.enumerate()}
     checks = 0
     def check(value):
         nonlocal checks
@@ -230,6 +242,11 @@ async def phase(database, name):
             check(await asyncio.to_thread(client.list) == ())
         else:
             raise ValueError("Unknown acceptance phase.")
+    # The public form client uses asyncio's default executor; its caller owns
+    # that executor until asyncio.run exits. Native UI/storage workers must close.
+    remaining = {thread.ident for thread in threading.enumerate()
+                 if not thread.name.startswith("asyncio")}
+    require(remaining <= threads)
     return {"phase": name, "checks": checks, "closed": True}
 '''
 

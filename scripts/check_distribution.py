@@ -133,18 +133,95 @@ def qualify_live(python, work):
     return receipt
 
 
+def qualify_projects(generator, work, kind, manifest, stage):
+    """Install the emitted projects normally, including their immutable dependencies."""
+    receipts = []
+    for profile, count in (("service", 9), ("ui", 15), ("live", 15)):
+        name = "reference-" + profile
+        module = name.replace("-", "_")
+        destination = work / (kind + "-" + name)
+        stage(kind + "/generated-" + profile)
+        command = (generator, "-I", "-m", "compose_application.projects", destination,
+                   "--name", name, "--profile", profile)
+        creation = json.loads(run(*command, cwd=work, capture=True))
+        if creation["created"] is not True:
+            raise RuntimeError("Installed generator did not create the selected project.")
+        selection = creation["selection"]
+        project = tomllib.loads((destination / "pyproject.toml").read_text(encoding="utf-8"))["project"]
+        expected_dependency = f"compose-application[{profile}] @ git+https://github.com/outside-labs/compose_application.git@{selection['source']}"
+        if project["dependencies"] != [expected_dependency]:
+            raise RuntimeError("Generated project selected unexpected dependencies.")
+        digest = package_digest(destination / "src" / module)
+        python = environment(work / (kind + "-" + profile + "-environment"))
+        # Resolve the generated dependency declaration without overrides/no-deps.
+        run("uv", "pip", "install", "--python", python, destination, cwd=work)
+        run("uv", "pip", "check", "--python", python, cwd=work)
+        probe = f'''
+import hashlib, importlib.metadata as metadata, importlib.util, json, pathlib, sys
+import {module} as application
+assert not any(name in sys.modules for name in ("expose_api", "spatial_ui", "backpack_store", "enforce_type"))
+path = pathlib.Path(application.__file__).resolve().parent
+assert path.is_relative_to(pathlib.Path(sys.prefix).resolve())
+digest = hashlib.sha256()
+for source in sorted(path.rglob("*")):
+    if source.is_file() and source.suffix == ".py":
+        digest.update(source.relative_to(path).as_posix().encode() + b"\\0" + source.read_bytes())
+packages = {{}}
+for name in ("compose-application", "expose-api", "backpack-store", "enforce-type", "spatial-ui"):
+    try:
+        distribution = metadata.distribution(name)
+    except metadata.PackageNotFoundError:
+        assert name == "spatial-ui" and {profile!r} == "service"
+        continue
+    direct = json.loads(distribution.read_text("direct_url.json") or "{{}}")
+    packages[name] = {{"version": distribution.version, "revision": direct.get("vcs_info", {{}}).get("commit_id")}}
+print(json.dumps({{"packages": packages, "source_sha256": digest.hexdigest(), "import_isolated": True}}))
+'''
+        installed = json.loads(run(python, "-I", "-c", probe, cwd=work, capture=True))
+        expected = {**manifest["current"]["packages"], "compose-application": {
+            "version": "0.1.0.dev0", "revision": selection["source"]}}
+        if profile != "service":
+            expected.update(manifest["ui"]["packages"])
+        if installed["packages"] != expected or installed["source_sha256"] != digest:
+            raise RuntimeError("Generated project dependency/source provenance differs from its selection.")
+        entry = python.parent / (name + (".exe" if os.name == "nt" else ""))
+        accepted = json.loads(run(entry, "check", cwd=work, capture=True))
+        if (accepted.get("passed") is not True or accepted.get("checks") != count
+                or accepted.get("profile") != profile or accepted.get("process_restart") is not True
+                or [phase.get("phase") for phase in accepted["phases"]] != ["write", "reload"]
+                or not all(phase.get("closed") is True for phase in accepted["phases"])):
+            raise RuntimeError("Generated command did not provide complete process/lifecycle acceptance.")
+        # A normal repeat after source edits and an existing data file must leave
+        # both bytes and modification times untouched; it is not a refresh mode.
+        source = destination / "src" / module / "app.py"
+        source.write_text(source.read_text(encoding="utf-8") + "\n# Application-owned change.\n", encoding="utf-8")
+        (destination / "owner.sqlite3").write_bytes(b"synthetic preservation fixture")
+        before = {path.relative_to(destination): (path.read_bytes(), path.stat().st_mtime_ns)
+                  for path in destination.rglob("*") if path.is_file()}
+        repeated = json.loads(run(*command, cwd=work, capture=True))
+        after = {path.relative_to(destination): (path.read_bytes(), path.stat().st_mtime_ns)
+                 for path in destination.rglob("*") if path.is_file()}
+        if repeated["created"] is not False or repeated["selection"] != selection or before != after:
+            raise RuntimeError("Repeated generation changed application-owned files or data.")
+        receipts.append({"selection": selection, **installed, "acceptance": accepted,
+                         "repeat_preserved": True, "command": "installed-console-script",
+                         "dependency_resolution": "declared-immutable-sources"})
+    return receipts
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--service", action="store_true", help="qualify the optional service profile in both installed artifacts")
     parser.add_argument("--matrix", action="store_true", help="qualify the finite minimum/current matrix and code upgrades")
     parser.add_argument("--ui", action="store_true", help="qualify the optional typed UI in both installed artifacts")
     parser.add_argument("--live", action="store_true", help="qualify protected native/process live checks in both artifacts")
+    parser.add_argument("--projects", action="store_true", help="install and check generated service/ui/live projects from both artifacts")
     parser.add_argument("--report", type=Path, help="write a machine-readable receipt, including failure phase")
     args = parser.parse_args()
     project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
     if project["dependencies"]:
         raise RuntimeError("The initial package foundation declares no runtime dependencies.")
-    manifest = json.loads((ROOT / "docs/compatibility-v1.json").read_text()) if args.matrix or args.ui or args.live else None
+    manifest = json.loads((ROOT / "docs/compatibility-v1.json").read_text()) if args.matrix or args.ui or args.live or args.projects else None
     if args.matrix and (sys.implementation.name != "cpython" or sys.version_info[:2] != (3, 14)
                         or platform.system() not in manifest["operating_systems"]):
         parser.error("This finite matrix qualifies CPython 3.14 on Linux, macOS and Windows.")
@@ -205,6 +282,8 @@ def main():
                     database = work / ("upgrade-" + kind + ".sqlite3")
                     receipt["upgrade"] = [upgrade_phase(minimum_python, work, database, "write"),
                                            upgrade_phase(python, work, database, "reload")]
+                if args.projects:
+                    receipt["projects"] = qualify_projects(python, work, kind, manifest, stage)
                 print(f"Installed {kind} passed: {artifact.name}", flush=True)
         report["passed"], report["phase"] = True, "complete"
     except Exception as error:

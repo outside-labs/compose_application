@@ -21,7 +21,7 @@ Names are lowercase portable distribution names with single hyphens; Python
 imports replace hyphens with underscores. Names that shadow standard-library,
 integration or reserved platform names are refused. Every project selects one
 profile and the immutable accepted composition source
-`64fdd88efec0238fa5a224d490cabd5e6a49c766`. That source owns the qualified API,
+`8977963049023c7fe72bb8a2c9089633df049c3d`. That source owns the qualified API,
 UI and storage pins. The generator adds no runtime dependency to the base
 composition package and imports no optional integration to select a profile.
 
@@ -78,3 +78,16 @@ cross-process delivery and reconnect evidence; generation chooses that reference
 
 Implementation and acceptance: [CA-09](https://github.com/outside-labs/compose_application/issues/9),
 [STYLE-01–06](https://github.com/outside-labs/compose_application/issues/22).
+
+## Installed acceptance
+
+`scripts/check_distribution.py --projects --report /tmp/projects.json` builds
+wheel and source artifacts, uses each isolated installed generator and normally
+installs all three emitted profiles into separate environments. It verifies
+immutable dependency provenance and exact installed application source hashes,
+then runs the installed console scripts. Each uses two independent processes
+for temporary data: nine service, 15 UI and 15 live checks per artifact.
+Receipts also verify import isolation and unchanged bytes/modification times
+after source edits, a data fixture and the same generation request. The normal
+cross-platform compatibility job retains these results alongside existing
+service/UI/live acceptance. The base package still installs independently.
