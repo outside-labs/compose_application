@@ -53,11 +53,11 @@ and Node 24.19.0 against pocket-python
 | Probe | Selected engine outcome | Owning prerequisite |
 | --- | --- | --- |
 | Domain dictionary/state values | Supported, matches CPython, zero logical close counters | Existing source profile |
-| T-string view | Refused by source profile | [Track A #600](https://github.com/outside-labs/pocket-python/issues/600), shared formatting/syntax ownership |
-| Dataclass fields | Module absent from the supplied registry | [Library profiles #126](https://github.com/outside-labs/pocket-python/issues/126), [package qualification #128](https://github.com/outside-labs/pocket-python/issues/128) |
+| T-string view | Refused by source profile | [Track A #600](https://github.com/wispsy/pocket-python/issues/600), shared formatting/syntax ownership |
+| Dataclass fields | Module absent from the supplied registry | [Library profiles #126](https://github.com/wispsy/pocket-python/issues/126), [package qualification #128](https://github.com/wispsy/pocket-python/issues/128) |
 | Typing reflection | Module absent from the supplied registry | Same selected-library owners; select actual APIs before reuse |
-| JSON round trip | Module absent from the supplied registry | [JSON API slice in #126](https://github.com/outside-labs/pocket-python/issues/126) |
-| Native await | Refused by source profile | [Async/host #34](https://github.com/outside-labs/pocket-python/issues/34), [Track B #601](https://github.com/outside-labs/pocket-python/issues/601) LB-1/LB-2 |
+| JSON round trip | Module absent from the supplied registry | [JSON API slice in #126](https://github.com/wispsy/pocket-python/issues/126) |
+| Native await | Refused by source profile | [Async/host #34](https://github.com/wispsy/pocket-python/issues/34), [Track B #601](https://github.com/wispsy/pocket-python/issues/601) LB-1/LB-2 |
 | Original workload | Refused at dependency admission | All selected syntax/library prerequisites above, before host execution |
 
 The application-only registry result does not establish that no other library

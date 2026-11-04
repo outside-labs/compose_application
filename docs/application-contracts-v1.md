@@ -110,12 +110,12 @@ focus and field errors, and requires explicit conflict resolution on stale saves
 
 | Boundary | Owner / next contract |
 | --- | --- |
-| Relational names, scalar mappings, keys, indexes, parameterized queries, detached values and pagination | [BP-SQL-01](https://github.com/outside-labs/backpack/issues/17) |
-| Transactions, revisions, nesting and async cancellation/connection ownership | [BP-TXN-01](https://github.com/outside-labs/backpack/issues/19), [BP-ASYNC-01](https://github.com/outside-labs/backpack/issues/20) |
-| Migration namespaces, verified backup and startup locking | [BP-MIG-01](https://github.com/outside-labs/backpack/issues/22), [Pretty Notebook inventory](https://github.com/outside-labs/pretty-notebook/issues/186) |
-| PostgreSQL driver/version and isolation | [BP-PG-01](https://github.com/outside-labs/backpack/issues/24) |
-| Browser persistence adapter, grant/value closure and actual runtime prerequisites | [CA-06](https://github.com/outside-labs/compose_application/issues/6), [Track B](https://github.com/outside-labs/pocket-python/issues/601) |
-| Production hosting, session routing and event access | [SUI-HOST-01](https://github.com/outside-labs/spatial_ui/issues/11), [API-AUTH-01](https://github.com/outside-labs/expose_api/issues/12) |
+| Relational names, scalar mappings, keys, indexes, parameterized queries, detached values and pagination | [BP-SQL-01](https://github.com/wispsy/backpack/issues/17) |
+| Transactions, revisions, nesting and async cancellation/connection ownership | [BP-TXN-01](https://github.com/wispsy/backpack/issues/19), [BP-ASYNC-01](https://github.com/wispsy/backpack/issues/20) |
+| Migration namespaces, verified backup and startup locking | [BP-MIG-01](https://github.com/wispsy/backpack/issues/22), [Pretty Notebook inventory](https://github.com/wispsy/pretty-notebook/issues/186) |
+| PostgreSQL driver/version and isolation | [BP-PG-01](https://github.com/wispsy/backpack/issues/24) |
+| Browser persistence adapter, grant/value closure and actual runtime prerequisites | [CA-06](https://github.com/wispsy/compose_application/issues/6), [Track B](https://github.com/wispsy/pocket-python/issues/601) |
+| Production hosting, session routing and event access | [SUI-HOST-01](https://github.com/wispsy/spatial_ui/issues/11), [API-AUTH-01](https://github.com/wispsy/expose_api/issues/12) |
 
 No external service, broker, browser SQL engine or synchronized package release
 is selected. The optional Enforce Type/API parity investigation remains separate.

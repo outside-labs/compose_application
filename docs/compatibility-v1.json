@@ -59,7 +59,7 @@
     "composition_revision": "98ec150f8bebec11013d750403ce529050042e2c",
     "api_revision": "01d7c486ae9041532c8bfe01d8a2a00496523e68",
     "ui_revision": "cf97352f0d1c4a3f226620bc575ef6dcc2880eaf",
-    "evidence": "https://github.com/outside-labs/compose_application/actions/runs/41576982123"
+    "evidence": "https://github.com/wispsy/compose_application/actions/runs/41576982123"
   },
   "track_b": {
     "application_accepted": false,
