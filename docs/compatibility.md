@@ -82,7 +82,7 @@ denials and complete shutdown. Linux Chromium retains a separate protected-live
 browser receipt for editing, principal isolation and same-origin restart.
 
 The current UI/live source includes the numeric-loopback startup repair from
-[HOST-05](https://github.com/outside-labs/spatial_ui/pull/52). Preview binding
+[HOST-05](https://github.com/wispsy/spatial_ui/pull/52). Preview binding
 uses the selected numeric address without reverse DNS. Each current installed
 UI artifact also verifies startup with DNS lookups refused. The prior LIVE-02
 source combination remains recorded under `previous_live` and in its immutable

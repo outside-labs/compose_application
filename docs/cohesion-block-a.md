@@ -9,7 +9,7 @@ owns application assembly, reference applications and integration acceptance.
 
 The [Tabular Interfaces plan](../IMPLEMENTATION_PLAN.md) extends this foundation
 with reusable read-only and editable tables. Its
-[cross-repository Project](https://github.com/orgs/outside-labs/projects/19)
+[cross-repository Project](https://github.com/orgs/wispsy/projects/19)
 coordinates the owning storage, spreadsheet, API, UI and Markdown tasks.
 
 The first storage profile is relational SQLite. PostgreSQL follows after the
@@ -125,7 +125,7 @@ an adopted identity and record-access contract.
 | Track B browser-local | Python-owned state, typed input/rendering, durable save/reload and restart | Explicitly granted bounded browser storage/view capabilities |
 | Connected browser | Browser application using local state and an optional service | Granted REST/WebSocket capabilities with explicit failures, cancellation and recovery |
 
-Track B is owned by [pocket-python #601](https://github.com/outside-labs/pocket-python/issues/601).
+Track B is owned by [pocket-python #601](https://github.com/wispsy/pocket-python/issues/601).
 Language, await/host semantics and package qualification retain their existing
 owners. Probe real application source and entry points, including t-strings,
 dataclasses, typing/reflection, JSON and async behavior. Record original source,

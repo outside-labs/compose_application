@@ -10,7 +10,7 @@ Optional composition of typed storage, APIs and spatial interfaces.
 It coordinates optional use of `backpack-store`, `expose-api` and `spatial-ui`,
 with `enforce-type` validation and a pocket-python Track B application target.
 
-- Repository: `outside-labs/compose_application`
+- Repository: `wispsy/compose_application`
 - Distribution: `compose-application`
 - Import: `compose_application`
 - Python: 3.14 or newer
@@ -24,8 +24,8 @@ runtime support retains its separate application gates.
 ## Plan and development queue
 
 - [Tabular Interfaces plan](IMPLEMENTATION_PLAN.md) and
-  [cross-repository Project](https://github.com/orgs/outside-labs/projects/19)
-- [Cohesion Block A Project](https://github.com/orgs/outside-labs/projects/18)
+  [cross-repository Project](https://github.com/orgs/wispsy/projects/19)
+- [Cohesion Block A Project](https://github.com/orgs/wispsy/projects/18)
 - [Architecture charter](docs/cohesion-block-a.md)
 - [Shared contract register](docs/contracts.md)
 - [Track B workload and prerequisite probes](docs/track-b-workload.md)

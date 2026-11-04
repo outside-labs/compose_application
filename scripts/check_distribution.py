@@ -290,7 +290,7 @@ def qualify_projects(generator, work, kind, manifest, stage):
             raise RuntimeError("Installed generator did not create the selected project.")
         selection = creation["selection"]
         project = tomllib.loads((destination / "pyproject.toml").read_text(encoding="utf-8"))["project"]
-        expected_dependency = f"compose-application[{profile}] @ git+https://github.com/outside-labs/compose_application.git@{selection['source']}"
+        expected_dependency = f"compose-application[{profile}] @ git+https://github.com/wispsy/compose_application.git@{selection['source']}"
         if project["dependencies"] != [expected_dependency]:
             raise RuntimeError("Generated project selected unexpected dependencies.")
         digest = package_digest(destination / "src" / module)
@@ -403,7 +403,7 @@ def main():
                 minimum = tabular_manifest["minimum"]
                 stage("tabular-minimum/install")
                 tabular_minimum_python = environment(work / "tabular-minimum")
-                source = "compose-application[tabular] @ git+https://github.com/outside-labs/compose_application.git@" + minimum["composition_revision"]
+                source = "compose-application[tabular] @ git+https://github.com/wispsy/compose_application.git@" + minimum["composition_revision"]
                 run("uv", "pip", "install", "--python", tabular_minimum_python, source, cwd=work)
                 report["tabular_minimum"] = tabular_provenance(tabular_minimum_python, work, minimum["packages"], editing=False)
                 if report["tabular_minimum"]["composition"] != {"version": minimum["composition_version"], "revision": minimum["composition_revision"]}:
@@ -411,7 +411,7 @@ def main():
             if args.matrix:
                 minimum = manifest["minimum"]
                 minimum_python = environment(work / "minimum")
-                source = "git+https://github.com/outside-labs/compose_application.git@" + minimum["composition_revision"]
+                source = "git+https://github.com/wispsy/compose_application.git@" + minimum["composition_revision"]
                 stage("minimum/base-install")
                 run("uv", "pip", "install", "--python", minimum_python, "--no-deps", "compose-application @ " + source, cwd=work)
                 receipt = {"name": "minimum", **base_probe(minimum_python, work, minimum["compose_version"])}

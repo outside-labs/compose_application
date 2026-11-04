@@ -4,7 +4,7 @@ This plan selects a generalized read-only and editable table interface across
 Backpack Store, Headless Spreadsheets, Expose API, Spatial UI, Pretty Notebook
 and Compose Application. It builds on Cohesion Block A.
 
-The [Tabular Interfaces Project](https://github.com/orgs/outside-labs/projects/19)
+The [Tabular Interfaces Project](https://github.com/orgs/wispsy/projects/19)
 and owning issues hold execution status, acceptance criteria and dependencies.
 This document records architecture and delivery order. Proposed interfaces below
 require their owning implementation tasks; they are not claims of shipped APIs.
@@ -38,17 +38,17 @@ which combinations have actually been qualified together.
 
 | Repository | Inspected main | Existing foundation |
 | --- | --- | --- |
-| [compose_application](https://github.com/outside-labs/compose_application/tree/619505491e72716f90d6db7dc16df65436550275) | `6195054` | Persistent REST/UI/live references, explicit profiles, installed compatibility matrix and generated reference projects |
-| [backpack](https://github.com/outside-labs/backpack/tree/696936ea2af46876bee61aefbf703a52edecc529) | `696936e` | Registered relational SQLite models, checked updates, bounded typed queries, owned async worker, migrations and snapshots |
-| [headless_spreadsheets](https://github.com/outside-labs/headless_spreadsheets/tree/07c9ed36840c021b7c7bc49d7e7c90f7f1aa0283) | `07c9ed3` | Released typed cells, tables, live read-only views, filters/sorts, source-address mapping and escaped table writers |
-| [expose_api](https://github.com/outside-labs/expose_api/tree/c20ce4aa3487d4913b56ff244a031f83de2df285) | `c20ce4a` | Optional relational Backpack adapter, checked updates, field/access policies, native ASGI and protected single-record live snapshots |
-| [spatial_ui](https://github.com/outside-labs/spatial_ui/tree/9e473497febdc505e54ba25536b65b68722d264b) | `9e47349` | Typed forms, independent sessions, REST bindings, draft/conflict handling and native ASGI/browser qualification |
-| [pretty-notebook](https://github.com/outside-labs/pretty-notebook/tree/2bfc586cfce7e982f73cbbb0215c99260388f73c) | `2bfc586` | Source-preserving typed Markdown parser, document table nodes, safe standalone HTML and notebook-specific rendering |
+| [compose_application](https://github.com/wispsy/compose_application/tree/619505491e72716f90d6db7dc16df65436550275) | `6195054` | Persistent REST/UI/live references, explicit profiles, installed compatibility matrix and generated reference projects |
+| [backpack](https://github.com/wispsy/backpack/tree/696936ea2af46876bee61aefbf703a52edecc529) | `696936e` | Registered relational SQLite models, checked updates, bounded typed queries, owned async worker, migrations and snapshots |
+| [headless_spreadsheets](https://github.com/wispsy/headless_spreadsheets/tree/07c9ed36840c021b7c7bc49d7e7c90f7f1aa0283) | `07c9ed3` | Released typed cells, tables, live read-only views, filters/sorts, source-address mapping and escaped table writers |
+| [expose_api](https://github.com/wispsy/expose_api/tree/c20ce4aa3487d4913b56ff244a031f83de2df285) | `c20ce4a` | Optional relational Backpack adapter, checked updates, field/access policies, native ASGI and protected single-record live snapshots |
+| [spatial_ui](https://github.com/wispsy/spatial_ui/tree/9e473497febdc505e54ba25536b65b68722d264b) | `9e47349` | Typed forms, independent sessions, REST bindings, draft/conflict handling and native ASGI/browser qualification |
+| [pretty-notebook](https://github.com/wispsy/pretty-notebook/tree/2bfc586cfce7e982f73cbbb0215c99260388f73c) | `2bfc586` | Source-preserving typed Markdown parser, document table nodes, safe standalone HTML and notebook-specific rendering |
 
 We can begin the CPython table work now. Block A's remaining
-[browser-local application gate](https://github.com/outside-labs/compose_application/issues/7),
-[public-hosting selection](https://github.com/outside-labs/spatial_ui/issues/11)
-and [PostgreSQL profile](https://github.com/outside-labs/backpack/issues/24)
+[browser-local application gate](https://github.com/wispsy/compose_application/issues/7),
+[public-hosting selection](https://github.com/wispsy/spatial_ui/issues/11)
+and [PostgreSQL profile](https://github.com/wispsy/backpack/issues/24)
 do not block the initial SQLite-backed table.
 
 The existing spreadsheet view is not an interactive browser component. Its
@@ -226,7 +226,7 @@ manual refresh; collection live updates require TAB-LIVE-01.
 
 ## Markdown extraction and document tables
 
-Reuse [the existing MD-01 decision](https://github.com/outside-labs/headless_spreadsheets/issues/11).
+Reuse [the existing MD-01 decision](https://github.com/wispsy/headless_spreadsheets/issues/11).
 The inventory covers nodes, spans, parser/dialect boundaries, safe rendering,
 input/work budgets, fixture notices and notebook coupling in render context,
 links, routes, icons, graphs, images and publication fingerprints.
@@ -259,30 +259,30 @@ of broad parent roadmaps.
 
 | Order | Task | Repository | Phase | Prerequisites |
 | --- | --- | --- | --- | --- |
-| 1 | [TAB-00](https://github.com/outside-labs/compose_application/issues/38) | `compose_application` | T0 Planning | — |
-| 2 | [TAB-01](https://github.com/outside-labs/compose_application/issues/39) | `compose_application` | T1 Foundations | [TAB-00](https://github.com/outside-labs/compose_application/issues/38) |
-| 3 | [HS-TAB-01](https://github.com/outside-labs/headless_spreadsheets/issues/17) | `headless_spreadsheets` | T1 Foundations | [TAB-01](https://github.com/outside-labs/compose_application/issues/39) |
-| 4 | [BP-TAB-01](https://github.com/outside-labs/backpack/issues/37) | `backpack` | T1 Foundations | [TAB-01](https://github.com/outside-labs/compose_application/issues/39) |
-| 5 | [API-TAB-01](https://github.com/outside-labs/expose_api/issues/66) | `expose_api` | T1 Foundations | [TAB-01](https://github.com/outside-labs/compose_application/issues/39) |
-| 6 | [PN-MD-EXTRACT-01](https://github.com/outside-labs/pretty-notebook/issues/191) | `pretty-notebook` | T1 Foundations | [TAB-00](https://github.com/outside-labs/compose_application/issues/38) |
-| 7 | [API-TAB-02](https://github.com/outside-labs/expose_api/issues/67) | `expose_api` | T2 Read-only | [API-TAB-01](https://github.com/outside-labs/expose_api/issues/66), [BP-TAB-01](https://github.com/outside-labs/backpack/issues/37) |
-| 8 | [SUI-TAB-01](https://github.com/outside-labs/spatial_ui/issues/53) | `spatial_ui` | T2 Read-only | [HS-TAB-01](https://github.com/outside-labs/headless_spreadsheets/issues/17) |
-| 9 | [SUI-TAB-02](https://github.com/outside-labs/spatial_ui/issues/54) | `spatial_ui` | T2 Read-only | [SUI-TAB-01](https://github.com/outside-labs/spatial_ui/issues/53), [API-TAB-02](https://github.com/outside-labs/expose_api/issues/67) |
-| 10 | [TAB-02](https://github.com/outside-labs/compose_application/issues/40) | `compose_application` | T2 Read-only | [SUI-TAB-02](https://github.com/outside-labs/spatial_ui/issues/54), [API-TAB-02](https://github.com/outside-labs/expose_api/issues/67) |
-| 11 | [HS-TAB-02](https://github.com/outside-labs/headless_spreadsheets/issues/18) | `headless_spreadsheets` | T3 Editing | [HS-TAB-01](https://github.com/outside-labs/headless_spreadsheets/issues/17), [BP-TAB-01](https://github.com/outside-labs/backpack/issues/37) |
-| 12 | [API-TAB-03](https://github.com/outside-labs/expose_api/issues/68) | `expose_api` | T3 Editing | [API-TAB-02](https://github.com/outside-labs/expose_api/issues/67) |
-| 13 | [SUI-TAB-03](https://github.com/outside-labs/spatial_ui/issues/55) | `spatial_ui` | T3 Editing | [SUI-TAB-02](https://github.com/outside-labs/spatial_ui/issues/54), [API-TAB-03](https://github.com/outside-labs/expose_api/issues/68) |
-| 14 | [TAB-03](https://github.com/outside-labs/compose_application/issues/41) | `compose_application` | T3 Editing | [TAB-02](https://github.com/outside-labs/compose_application/issues/40), [HS-TAB-02](https://github.com/outside-labs/headless_spreadsheets/issues/18), [SUI-TAB-03](https://github.com/outside-labs/spatial_ui/issues/55) |
-| 15 | [TAB-04](https://github.com/outside-labs/compose_application/issues/42) | `compose_application` | T4 Qualification | [TAB-03](https://github.com/outside-labs/compose_application/issues/41) |
-| 16 | [HS-MD-01](https://github.com/outside-labs/headless_spreadsheets/issues/11) | `headless_spreadsheets` | M0 Markdown decision | [PN-MD-EXTRACT-01](https://github.com/outside-labs/pretty-notebook/issues/191) |
-| 17 | [PN-MD-EXTRACT-02](https://github.com/outside-labs/pretty-notebook/issues/192) | `pretty-notebook` | M1 Markdown | [PN-MD-EXTRACT-01](https://github.com/outside-labs/pretty-notebook/issues/191), [HS-MD-01](https://github.com/outside-labs/headless_spreadsheets/issues/11) |
-| 18 | [PN-MD-EXTRACT-03](https://github.com/outside-labs/pretty-notebook/issues/193) | `pretty-notebook` | M1 Markdown | [PN-MD-EXTRACT-02](https://github.com/outside-labs/pretty-notebook/issues/192) |
-| 19 | [HS-MD-02](https://github.com/outside-labs/headless_spreadsheets/issues/19) | `headless_spreadsheets` | M1 Markdown | [PN-MD-EXTRACT-02](https://github.com/outside-labs/pretty-notebook/issues/192) |
-| 20 | [TAB-MD-01](https://github.com/outside-labs/compose_application/issues/43) | `compose_application` | M1 Markdown | [PN-MD-EXTRACT-03](https://github.com/outside-labs/pretty-notebook/issues/193), [HS-MD-02](https://github.com/outside-labs/headless_spreadsheets/issues/19), [TAB-04](https://github.com/outside-labs/compose_application/issues/42) |
-| 21 | [TAB-LIVE-01](https://github.com/outside-labs/compose_application/issues/44) | `compose_application` | Later extensions | [TAB-04](https://github.com/outside-labs/compose_application/issues/42) |
+| 1 | [TAB-00](https://github.com/wispsy/compose_application/issues/38) | `compose_application` | T0 Planning | — |
+| 2 | [TAB-01](https://github.com/wispsy/compose_application/issues/39) | `compose_application` | T1 Foundations | [TAB-00](https://github.com/wispsy/compose_application/issues/38) |
+| 3 | [HS-TAB-01](https://github.com/wispsy/headless_spreadsheets/issues/17) | `headless_spreadsheets` | T1 Foundations | [TAB-01](https://github.com/wispsy/compose_application/issues/39) |
+| 4 | [BP-TAB-01](https://github.com/wispsy/backpack/issues/37) | `backpack` | T1 Foundations | [TAB-01](https://github.com/wispsy/compose_application/issues/39) |
+| 5 | [API-TAB-01](https://github.com/wispsy/expose_api/issues/66) | `expose_api` | T1 Foundations | [TAB-01](https://github.com/wispsy/compose_application/issues/39) |
+| 6 | [PN-MD-EXTRACT-01](https://github.com/wispsy/pretty-notebook/issues/191) | `pretty-notebook` | T1 Foundations | [TAB-00](https://github.com/wispsy/compose_application/issues/38) |
+| 7 | [API-TAB-02](https://github.com/wispsy/expose_api/issues/67) | `expose_api` | T2 Read-only | [API-TAB-01](https://github.com/wispsy/expose_api/issues/66), [BP-TAB-01](https://github.com/wispsy/backpack/issues/37) |
+| 8 | [SUI-TAB-01](https://github.com/wispsy/spatial_ui/issues/53) | `spatial_ui` | T2 Read-only | [HS-TAB-01](https://github.com/wispsy/headless_spreadsheets/issues/17) |
+| 9 | [SUI-TAB-02](https://github.com/wispsy/spatial_ui/issues/54) | `spatial_ui` | T2 Read-only | [SUI-TAB-01](https://github.com/wispsy/spatial_ui/issues/53), [API-TAB-02](https://github.com/wispsy/expose_api/issues/67) |
+| 10 | [TAB-02](https://github.com/wispsy/compose_application/issues/40) | `compose_application` | T2 Read-only | [SUI-TAB-02](https://github.com/wispsy/spatial_ui/issues/54), [API-TAB-02](https://github.com/wispsy/expose_api/issues/67) |
+| 11 | [HS-TAB-02](https://github.com/wispsy/headless_spreadsheets/issues/18) | `headless_spreadsheets` | T3 Editing | [HS-TAB-01](https://github.com/wispsy/headless_spreadsheets/issues/17), [BP-TAB-01](https://github.com/wispsy/backpack/issues/37) |
+| 12 | [API-TAB-03](https://github.com/wispsy/expose_api/issues/68) | `expose_api` | T3 Editing | [API-TAB-02](https://github.com/wispsy/expose_api/issues/67) |
+| 13 | [SUI-TAB-03](https://github.com/wispsy/spatial_ui/issues/55) | `spatial_ui` | T3 Editing | [SUI-TAB-02](https://github.com/wispsy/spatial_ui/issues/54), [API-TAB-03](https://github.com/wispsy/expose_api/issues/68) |
+| 14 | [TAB-03](https://github.com/wispsy/compose_application/issues/41) | `compose_application` | T3 Editing | [TAB-02](https://github.com/wispsy/compose_application/issues/40), [HS-TAB-02](https://github.com/wispsy/headless_spreadsheets/issues/18), [SUI-TAB-03](https://github.com/wispsy/spatial_ui/issues/55) |
+| 15 | [TAB-04](https://github.com/wispsy/compose_application/issues/42) | `compose_application` | T4 Qualification | [TAB-03](https://github.com/wispsy/compose_application/issues/41) |
+| 16 | [HS-MD-01](https://github.com/wispsy/headless_spreadsheets/issues/11) | `headless_spreadsheets` | M0 Markdown decision | [PN-MD-EXTRACT-01](https://github.com/wispsy/pretty-notebook/issues/191) |
+| 17 | [PN-MD-EXTRACT-02](https://github.com/wispsy/pretty-notebook/issues/192) | `pretty-notebook` | M1 Markdown | [PN-MD-EXTRACT-01](https://github.com/wispsy/pretty-notebook/issues/191), [HS-MD-01](https://github.com/wispsy/headless_spreadsheets/issues/11) |
+| 18 | [PN-MD-EXTRACT-03](https://github.com/wispsy/pretty-notebook/issues/193) | `pretty-notebook` | M1 Markdown | [PN-MD-EXTRACT-02](https://github.com/wispsy/pretty-notebook/issues/192) |
+| 19 | [HS-MD-02](https://github.com/wispsy/headless_spreadsheets/issues/19) | `headless_spreadsheets` | M1 Markdown | [PN-MD-EXTRACT-02](https://github.com/wispsy/pretty-notebook/issues/192) |
+| 20 | [TAB-MD-01](https://github.com/wispsy/compose_application/issues/43) | `compose_application` | M1 Markdown | [PN-MD-EXTRACT-03](https://github.com/wispsy/pretty-notebook/issues/193), [HS-MD-02](https://github.com/wispsy/headless_spreadsheets/issues/19), [TAB-04](https://github.com/wispsy/compose_application/issues/42) |
+| 21 | [TAB-LIVE-01](https://github.com/wispsy/compose_application/issues/44) | `compose_application` | Later extensions | [TAB-04](https://github.com/wispsy/compose_application/issues/42) |
 
-The existing [CA-07](https://github.com/outside-labs/compose_application/issues/7)
-and [pocket-python Track B](https://github.com/outside-labs/pocket-python/issues/601)
+The existing [CA-07](https://github.com/wispsy/compose_application/issues/7)
+and [pocket-python Track B](https://github.com/wispsy/pocket-python/issues/601)
 remain the canonical browser-local capability gates. A future table workload
 consumes qualified capability slices; this plan does not claim browser-local
 SQLite, whole-package compatibility or duplicate runtime implementation tasks.

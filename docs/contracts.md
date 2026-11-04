@@ -4,7 +4,7 @@ The [version 1 application contracts](application-contracts-v1.md) adopt the
 shared profiles, identities, revision/error representation and recovery rules.
 Their [finite fixtures](contracts/v1.json) are executable contract examples.
 The register below names the remaining owner-specific implementation contracts.
-The implementation queue is in [the Project](https://github.com/orgs/outside-labs/projects/18).
+The implementation queue is in [the Project](https://github.com/orgs/wispsy/projects/18).
 
 | Boundary | Adopted direction | Contract work before implementation |
 | --- | --- | --- |
@@ -23,15 +23,15 @@ The implementation queue is in [the Project](https://github.com/orgs/outside-lab
 
 ## Existing owning contracts
 
-- [API Store protocol](https://github.com/outside-labs/expose_api/blob/main/src/expose_api/stores.py)
-- [API SQLite contract issue](https://github.com/outside-labs/expose_api/issues/6)
-- [API Backpack adapter issue](https://github.com/outside-labs/expose_api/issues/10)
-- [API WebSocket contract issue](https://github.com/outside-labs/expose_api/issues/8)
-- [API identity and record access issue](https://github.com/outside-labs/expose_api/issues/12)
-- [Spatial typed input issue](https://github.com/outside-labs/spatial_ui/issues/7)
-- [Spatial hosting/transport issue](https://github.com/outside-labs/spatial_ui/issues/11)
-- [Pretty Notebook server-state guarantees](https://github.com/outside-labs/pretty-notebook/blob/main/docs/server-state.md)
-- [pocket-python application engine](https://github.com/outside-labs/pocket-python/issues/601)
+- [API Store protocol](https://github.com/wispsy/expose_api/blob/main/src/expose_api/stores.py)
+- [API SQLite contract issue](https://github.com/wispsy/expose_api/issues/6)
+- [API Backpack adapter issue](https://github.com/wispsy/expose_api/issues/10)
+- [API WebSocket contract issue](https://github.com/wispsy/expose_api/issues/8)
+- [API identity and record access issue](https://github.com/wispsy/expose_api/issues/12)
+- [Spatial typed input issue](https://github.com/wispsy/spatial_ui/issues/7)
+- [Spatial hosting/transport issue](https://github.com/wispsy/spatial_ui/issues/11)
+- [Pretty Notebook server-state guarantees](https://github.com/wispsy/pretty-notebook/blob/main/docs/server-state.md)
+- [pocket-python application engine](https://github.com/wispsy/pocket-python/issues/601)
 
 ## Decision boundaries
 

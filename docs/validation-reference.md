@@ -37,7 +37,7 @@ and retain receipts on Linux, macOS and Windows.
 Automatic macOS qualification uses the standard `macos-15-intel` runner; the
 Checks workflow retains manual `macos-latest` ARM64 selection with the same
 acceptance. Receipts record the actual machine architecture. This follows the
-[explicit runner repair](https://github.com/outside-labs/expose_api/issues/62)
+[explicit runner repair](https://github.com/wispsy/expose_api/issues/62)
 for the observed hosted ARM64 capacity failures.
 
 Existing generated projects retain their previously accepted composition source

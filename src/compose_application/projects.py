@@ -44,7 +44,7 @@ class ProjectSpec:
 
     @property
     def dependency(self):
-        return f"compose-application[{self.profile}] @ git+https://github.com/outside-labs/compose_application.git@{self.source}"
+        return f"compose-application[{self.profile}] @ git+https://github.com/wispsy/compose_application.git@{self.source}"
 
     def selection(self):
         """Return detached, non-secret generation metadata, independent of data schema."""

@@ -76,8 +76,8 @@ verify protected REST, concealed denial, native snapshots, revocation, reopen
 and complete worker cleanup. The accepted live matrix retains broader Chromium,
 cross-process delivery and reconnect evidence; generation chooses that reference.
 
-Implementation and acceptance: [CA-09](https://github.com/outside-labs/compose_application/issues/9),
-[STYLE-01–06](https://github.com/outside-labs/compose_application/issues/22).
+Implementation and acceptance: [CA-09](https://github.com/wispsy/compose_application/issues/9),
+[STYLE-01–06](https://github.com/wispsy/compose_application/issues/22).
 
 ## Installed acceptance
 
